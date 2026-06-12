@@ -19,9 +19,12 @@ All first-party content lives under `Assets/_Project/` (the leading underscore s
 
 ```
 Assets/_Project/
-  Scripts/Core/   game systems (e.g. GameManager)
-  Input/          input action assets + generated wrappers
-  Scenes/         Menu, Game, Leaderboard
+  Scripts/Core/     game systems (e.g. GameManager)
+  Scripts/Player/   player controller, input reader, state machine
+  Scripts/Player/States/  one file per FSM state (LocomotionState, RollState, ...)
+  Scripts/Data/     ScriptableObject data assets (RollData, ...)
+  Input/            input action assets + generated wrappers
+  Scenes/           Menu, Game, Leaderboard
   Art/  Audio/  Prefabs/
 ```
 
@@ -29,4 +32,22 @@ Assets/_Project/
 
 **Scene flow** is driven by `GameManager` (`Assets/_Project/Scripts/Core/GameManager.cs`): a `DontDestroyOnLoad` singleton (`GameManager.Instance`) that persists for the whole session and owns all scene transitions. Scene names are constants on this class (`MenuScene`, `GameScene`). It tracks a high-level `GameState` (`Menu` / `Playing`) by listening to `SceneManager.sceneLoaded`, and resets `Time.timeScale` to 1 on every load so a paused game can't carry a frozen timescale into the next scene. Route scene changes and quit through `GameManager` (`LoadMenu` / `StartGame` / `QuitGame`) rather than calling `SceneManager` directly. Note: Build Settings includes a `Leaderboard` scene that does not yet have a corresponding constant/method on `GameManager`.
 
-**Input** is defined in `Assets/_Project/Input/ArcadeControls.inputactions` and code-generated into `ArcadeControls.cs`. That `.cs` file is **auto-generated — never edit it**; change bindings in the `.inputactions` asset (via the Unity Input Actions editor) and let Unity regenerate. The single `Player` action map currently exposes: `Move` (Vector2, WASD), `Rol` (J), `Attack` (K), `Parry` (L). Consume input by implementing `ArcadeControls.IPlayerActions` and registering via `AddCallbacks`.
+**Input** is defined in `Assets/_Project/Input/ArcadeControls.inputactions` and code-generated into `ArcadeControls.cs`. That `.cs` file is **auto-generated — never edit it**; change bindings in the `.inputactions` asset (via the Unity Input Actions editor) and let Unity regenerate. The single `Player` action map currently exposes: `Move` (Vector2, WASD), `Rol` (J), `Attack` (K), `Parry` (L). Do **not** consume `ArcadeControls` directly from gameplay code — go through `PlayerInputReader` (see below).
+
+## Game design (intended)
+
+A high-difficulty arcade boss-rush "duel": one ship vs. one boss in a closed arena, short runs (~10 min). The player has exactly **three verbs — dodge (roll) / parry / attack** — and the fun is learning the boss's attack combos (à la Furi / Punch-Out!!) and answering each with the right verb. Planned systems (mostly not built yet): boss with destructible+regenerating parts that grant score, a persistent high-score table, a "coming soon" card on boss defeat.
+
+**Deployment target is an arcade cabinet** at Museo Arcade Vintage. Cabinets typically route their joystick/buttons through a keyboard encoder (I-PAC/JAMMA) that emits **keystrokes**, which is exactly why the current bindings live on the keyboard map — keep input data-driven so remapping to the cabinet stays trivial.
+
+## Player architecture
+
+The player is built as a small **finite state machine + ScriptableObject tuning data**, deliberately kept modular so attack/parry slot in as new files without touching existing ones. Key pieces (all under `Assets/_Project/Scripts/Player/`):
+
+- **`PlayerController`** — the MonoBehaviour "hub"/context. Owns the input reader and state machine, exposes shared refs/runtime state that states read & write: `Rb`, `Input`, `RollData`, `AimDirection`, `IsInvulnerable`, `NextRollTime`/`CanRoll`. Runs `Update`→`StateMachine.Tick()` and `FixedUpdate`→`StateMachine.FixedTick()`, and keeps `AimDirection` = last non-zero move input (rotating a child `aimIndicator`).
+- **`PlayerInputReader`** — the **only** place that touches `ArcadeControls`. Implements `IPlayerActions`, exposes `MoveInput` (poll) plus `RollPerformed`/`AttackPerformed`/`ParryPerformed` events. States subscribe here; nothing else references the Input System.
+- **`PlayerStateMachine` + `IPlayerState`** (`Enter/Tick/FixedTick/Exit`) — `ChangeState` exits the old state then enters the new. State instances are cached on the controller (no per-transition allocations).
+- **States** (`States/`): `LocomotionState` (slow walk + listens for roll) and `RollState` (curve-driven dash with i-frames + cooldown). `AttackState`/`ParryState` are future files; the input events for them are already wired.
+- **`RollData`** (`Scripts/Data/`, a `ScriptableObject`) — all roll tuning lives in an **asset** edited from the Inspector (distance, duration, `AnimationCurve` for fast→slow feel, i-frame window as 0..1 fractions, cooldown). Asset edits persist through Play mode, so the roll is balanced "hot". New abilities should follow this same SO-per-ability pattern (`AttackData`, `ParryData`).
+
+**Conventions for player code:** movement/physics writes go in `FixedTick` (use `rb.velocity` — this is Unity 2022.3, *not* `linearVelocity`); the curve-driven roll uses `rb.MovePosition`. `IsInvulnerable` is the hook the (future) damage system will read for dodge i-frames.

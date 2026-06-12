@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 0fe1fec0d0cd0ad4394a5a044f249e30
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - rb: {instanceID: 0}
+  - aimIndicator: {instanceID: 0}
+  - rollData: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
