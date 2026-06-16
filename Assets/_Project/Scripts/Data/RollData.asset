@@ -40,5 +40,5 @@ MonoBehaviour:
     m_RotationOrder: 4
   iFrameStart: 0
   iFrameEnd: 0.5
-  cooldown: 0.8
+  cooldown: 0.4
   vfxPrefab: {fileID: 0}

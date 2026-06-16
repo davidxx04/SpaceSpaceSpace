@@ -10,7 +10,9 @@ public class PlayerController : MonoBehaviour
     [Header("Refs")]
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Transform aimIndicator;
+    [SerializeField] private Hitbox attackHitbox;
     [SerializeField] private RollData rollData;
+    [SerializeField] private AttackData attackData;
 
     [Header("Movimiento")]
     [Tooltip("Velocidad de caminado (lenta, estilo arcade).")]
@@ -21,6 +23,8 @@ public class PlayerController : MonoBehaviour
     public PlayerInputReader Input { get; private set; }
     public PlayerStateMachine StateMachine { get; private set; }
     public RollData RollData => rollData;
+    public AttackData AttackData => attackData;
+    public Hitbox AttackHitbox => attackHitbox;
     public float WalkSpeed => walkSpeed;
 
     // Última dirección de apuntado (normalizada). La usan el rol y el indicador.
@@ -35,9 +39,14 @@ public class PlayerController : MonoBehaviour
     public float NextRollTime { get; set; }
     public bool CanRoll => Time.time >= NextRollTime;
 
+    // Momento (Time.time) a partir del cual se puede volver a atacar.
+    public float NextAttackTime { get; set; }
+    public bool CanAttack => Time.time >= NextAttackTime;
+
     // Estados cacheados (sin asignaciones de memoria por transición).
     public LocomotionState LocomotionState { get; private set; }
     public RollState RollState { get; private set; }
+    public AttackState AttackState { get; private set; }
 
     private void Awake()
     {
@@ -48,6 +57,7 @@ public class PlayerController : MonoBehaviour
 
         LocomotionState = new LocomotionState(this);
         RollState = new RollState(this);
+        AttackState = new AttackState(this);
     }
 
     private void OnEnable()

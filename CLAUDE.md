@@ -21,8 +21,9 @@ All first-party content lives under `Assets/_Project/` (the leading underscore s
 Assets/_Project/
   Scripts/Core/     game systems (e.g. GameManager)
   Scripts/Player/   player controller, input reader, state machine
-  Scripts/Player/States/  one file per FSM state (LocomotionState, RollState, ...)
-  Scripts/Data/     ScriptableObject data assets (RollData, ...)
+  Scripts/Player/States/  one file per FSM state (LocomotionState, RollState, AttackState, ...)
+  Scripts/Combat/   damage contract + shared combat components (IDamageable, Health, Hitbox, DamageFlash)
+  Scripts/Data/     ScriptableObject data assets (RollData, AttackData, ...)
   Input/            input action assets + generated wrappers
   Scenes/           Menu, Game, Leaderboard
   Art/  Audio/  Prefabs/
@@ -51,3 +52,15 @@ The player is built as a small **finite state machine + ScriptableObject tuning 
 - **`RollData`** (`Scripts/Data/`, a `ScriptableObject`) — all roll tuning lives in an **asset** edited from the Inspector (distance, duration, `AnimationCurve` for fast→slow feel, i-frame window as 0..1 fractions, cooldown). Asset edits persist through Play mode, so the roll is balanced "hot". New abilities should follow this same SO-per-ability pattern (`AttackData`, `ParryData`).
 
 **Conventions for player code:** movement/physics writes go in `FixedTick` (use `rb.velocity` — this is Unity 2022.3, *not* `linearVelocity`); the curve-driven roll uses `rb.MovePosition`. `IsInvulnerable` is the hook the (future) damage system will read for dodge i-frames.
+
+## Combat & damage
+
+Damage flows through a small, reusable contract so the player, the boss, and the boss's destructible parts all take damage uniformly (all under `Assets/_Project/Scripts/Combat/`):
+
+- **`IDamageable`** — single method `TakeDamage(DamageInfo)`; anything hittable implements it.
+- **`DamageInfo`** — a `struct` (amount, source, direction) passed by value, so new fields (knockback, damage type, parryable…) can be added without changing every signature.
+- **`Health`** — implements `IDamageable`; numeric `Current`/`Max` decoupled from UI via `Damaged`/`Died` events. `Current` uses `[field: SerializeField]` so it's visible in the Inspector for live debugging.
+- **`Hitbox`** — reusable **trigger** collider; while enabled, applies its configured `DamageInfo` to any `IDamageable` it overlaps on `targetLayers` (deduped per activation via a `HashSet`). Disabled by default; an attack enables it for its active window. The melee attack uses a child hitbox; **projectiles will reuse the same component** on a moving prefab — that's why the trigger approach was chosen over an `OverlapBox` query.
+- **`DamageFlash`** — optional feedback; flashes the sprite on `Health.Damaged`.
+
+The player attack (`AttackState` + `AttackData`, same FSM+SO pattern as the roll) is **directional** (uses `AimDirection`), enables the child `Hitbox` during a configurable window (`hitStart`/`hitEnd` as 0..1 fractions of `duration`), and scales movement during the attack by `moveMultiplier` (0 = rooted, 1 = normal, >1 = faster). A charged attack is just another `AttackData` asset. Physics layers `Player`/`Enemy` filter who hits whom. **Keep the Player root transform at scale 1** (scale a visual child instead) so the child hitbox's local placement/size stay in clean world units.
