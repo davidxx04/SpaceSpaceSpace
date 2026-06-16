@@ -13,6 +13,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Hitbox attackHitbox;
     [SerializeField] private RollData rollData;
     [SerializeField] private AttackData attackData;
+    [SerializeField] private ParryData parryData;
 
     [Header("Movimiento")]
     [Tooltip("Velocidad de caminado (lenta, estilo arcade).")]
@@ -24,6 +25,7 @@ public class PlayerController : MonoBehaviour
     public PlayerStateMachine StateMachine { get; private set; }
     public RollData RollData => rollData;
     public AttackData AttackData => attackData;
+    public ParryData ParryData => parryData;
     public Hitbox AttackHitbox => attackHitbox;
     public float WalkSpeed => walkSpeed;
 
@@ -31,9 +33,11 @@ public class PlayerController : MonoBehaviour
     // Por defecto "arriba" para que un rol sin haber movido nunca quede a cero.
     public Vector2 AimDirection { get; private set; } = Vector2.up;
 
-    // Activado por RollState durante la ventana de i-frames. El sistema de daño
-    // (futuro) lo consultará.
+    // Activado por RollState durante la ventana de i-frames. El receptor de daño lo consulta.
     public bool IsInvulnerable { get; set; }
+
+    // Activado por ParryState durante su ventana activa. El receptor de daño lo consulta.
+    public bool IsParrying { get; set; }
 
     // Momento (Time.time) a partir del cual se puede volver a rodar.
     public float NextRollTime { get; set; }
@@ -43,10 +47,15 @@ public class PlayerController : MonoBehaviour
     public float NextAttackTime { get; set; }
     public bool CanAttack => Time.time >= NextAttackTime;
 
+    // Momento (Time.time) a partir del cual se puede volver a parrear.
+    public float NextParryTime { get; set; }
+    public bool CanParry => Time.time >= NextParryTime;
+
     // Estados cacheados (sin asignaciones de memoria por transición).
     public LocomotionState LocomotionState { get; private set; }
     public RollState RollState { get; private set; }
     public AttackState AttackState { get; private set; }
+    public ParryState ParryState { get; private set; }
 
     private void Awake()
     {
@@ -58,6 +67,7 @@ public class PlayerController : MonoBehaviour
         LocomotionState = new LocomotionState(this);
         RollState = new RollState(this);
         AttackState = new AttackState(this);
+        ParryState = new ParryState(this);
     }
 
     private void OnEnable()
@@ -65,6 +75,7 @@ public class PlayerController : MonoBehaviour
         Input.Enable();
         Input.RollPerformed += OnRollInput;
         Input.AttackPerformed += OnAttackInput;
+        Input.ParryPerformed += OnParryInput;
         StateMachine.ChangeState(LocomotionState);
     }
 
@@ -72,6 +83,7 @@ public class PlayerController : MonoBehaviour
     {
         Input.RollPerformed -= OnRollInput;
         Input.AttackPerformed -= OnAttackInput;
+        Input.ParryPerformed -= OnParryInput;
         Input.Disable();
     }
 
@@ -95,6 +107,14 @@ public class PlayerController : MonoBehaviour
         if ((StateMachine.Current?.CanInterrupt ?? false) && CanAttack)
         {
             StateMachine.ChangeState(AttackState);
+        }
+    }
+
+    private void OnParryInput()
+    {
+        if ((StateMachine.Current?.CanInterrupt ?? false) && CanParry)
+        {
+            StateMachine.ChangeState(ParryState);
         }
     }
 

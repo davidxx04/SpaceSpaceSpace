@@ -21,9 +21,10 @@ All first-party content lives under `Assets/_Project/` (the leading underscore s
 Assets/_Project/
   Scripts/Core/     game systems (e.g. GameManager)
   Scripts/Player/   player controller, input reader, state machine
-  Scripts/Player/States/  one file per FSM state (LocomotionState, RollState, AttackState, ...)
-  Scripts/Combat/   damage contract + shared combat components (IDamageable, Health, Hitbox, DamageFlash)
-  Scripts/Data/     ScriptableObject data assets (RollData, AttackData, ...)
+  Scripts/Player/States/  one file per FSM state (LocomotionState, RollState, AttackState, ParryState, ...)
+  Scripts/Combat/   damage contract + shared combat components (IDamageable, IParryable, Health, Hitbox, DamageFlash)
+  Scripts/Data/     ScriptableObject data assets (RollData, AttackData, ParryData, ...)
+  Scripts/_Testing/ throwaway test props (TestEnemyAttacker) — safe to delete
   Input/            input action assets + generated wrappers
   Scenes/           Menu, Game, Leaderboard
   Art/  Audio/  Prefabs/
@@ -64,3 +65,5 @@ Damage flows through a small, reusable contract so the player, the boss, and the
 - **`DamageFlash`** — optional feedback; flashes the sprite on `Health.Damaged`.
 
 The player attack (`AttackState` + `AttackData`, same FSM+SO pattern as the roll) is **directional** (uses `AimDirection`), enables the child `Hitbox` during a configurable window (`hitStart`/`hitEnd` as 0..1 fractions of `duration`), and scales movement during the attack by `moveMultiplier` (0 = rooted, 1 = normal, >1 = faster). A charged attack is just another `AttackData` asset. Physics layers `Player`/`Enemy` filter who hits whom. **Keep the Player root transform at scale 1** (scale a visual child instead) so the child hitbox's local placement/size stay in clean world units.
+
+**Parry** is reactive, not offensive: `ParryState` + `ParryData` open a timing window during which `PlayerController.IsParrying` is true (analogous to `IsInvulnerable`). Enemy attacks reach the player through **`PlayerDamageReceiver`** (the player's `IDamageable`), which intercepts in order: parry (`IsParrying && DamageInfo.parryable`) → dodge i-frames (`IsInvulnerable`) → (future) `Health`. A successful parry fires `PlayerDamageReceiver.ParrySuccess` and notifies the attacker via `IParryable.OnParried()` (stun/posture hook). Whether a hit can be parried travels on the hit itself (`DamageInfo.parryable`), not via a physics layer. `TestEnemyAttacker` (`Scripts/_Testing/`) is a throwaway parryable attacker for testing parry without the boss — delete it (file + scene object) later.
