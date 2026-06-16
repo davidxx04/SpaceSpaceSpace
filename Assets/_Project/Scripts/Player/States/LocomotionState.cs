@@ -1,5 +1,6 @@
 // Estado por defecto en el suelo: caminado lento en 8 direcciones (idle = input cero).
-// Escucha los botones de rol y ataque para transicionar a sus estados.
+// El enrutado de los botones (rol/ataque) vive en PlayerController; este estado solo se
+// ocupa del movimiento y declara que siempre se puede interrumpir.
 public class LocomotionState : IPlayerState
 {
     private readonly PlayerController player;
@@ -9,39 +10,16 @@ public class LocomotionState : IPlayerState
         this.player = player;
     }
 
-    public void Enter()
-    {
-        player.Input.RollPerformed += OnRollPressed;
-        player.Input.AttackPerformed += OnAttackPressed;
-    }
+    // Andando siempre se puede empezar cualquier acción.
+    public bool CanInterrupt => true;
 
-    public void Exit()
-    {
-        player.Input.RollPerformed -= OnRollPressed;
-        player.Input.AttackPerformed -= OnAttackPressed;
-    }
-
+    public void Enter() { }
+    public void Exit() { }
     public void Tick() { }
 
     public void FixedTick()
     {
         // Caminado lento: la velocidad sigue directamente al input.
         player.Rb.velocity = player.Input.MoveInput * player.WalkSpeed;
-    }
-
-    private void OnRollPressed()
-    {
-        if (player.CanRoll)
-        {
-            player.StateMachine.ChangeState(player.RollState);
-        }
-    }
-
-    private void OnAttackPressed()
-    {
-        if (player.CanAttack)
-        {
-            player.StateMachine.ChangeState(player.AttackState);
-        }
     }
 }

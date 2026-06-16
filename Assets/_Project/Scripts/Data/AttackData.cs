@@ -37,6 +37,10 @@ public class AttackData : ScriptableObject
     [Tooltip("Tiempo desde que empieza un ataque hasta que se puede volver a atacar, en segundos.")]
     public float cooldown = 0.4f;
 
+    [Tooltip("Ventana de cancelación: cuánto ANTES de que termine el ataque se puede ya empezar " +
+             "otra acción (rol, parry...). 0 = acción totalmente comprometida.")]
+    public float cancelWindow = 0f;
+
     [Tooltip("VFX opcional a instanciar al atacar (sin uso obligatorio).")]
     public GameObject vfxPrefab;
 

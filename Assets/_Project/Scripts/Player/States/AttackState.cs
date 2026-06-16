@@ -16,6 +16,11 @@ public class AttackState : IPlayerState
         this.player = player;
     }
 
+    // Solo se puede cancelar el ataque en su tramo final (ventana de cancelación).
+    public bool CanInterrupt =>
+        player.AttackData.duration <= 0f ||
+        elapsed >= player.AttackData.duration - player.AttackData.cancelWindow;
+
     public void Enter()
     {
         AttackData data = player.AttackData;
@@ -73,8 +78,6 @@ public class AttackState : IPlayerState
         hitboxActive = false;
     }
 
-    // Coloca y orienta la hitbox por delante del jugador según la dirección de apuntado.
-    // Asume que el Transform raíz del jugador NO está escalado ni rotado (escala 1).
     private void PlaceHitbox(AttackData data)
     {
         Transform t = player.AttackHitbox.transform;

@@ -41,4 +41,5 @@ MonoBehaviour:
   iFrameStart: 0
   iFrameEnd: 0.5
   cooldown: 0.4
+  cancelWindow: 0.2
   vfxPrefab: {fileID: 0}

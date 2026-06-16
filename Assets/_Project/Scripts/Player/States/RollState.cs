@@ -16,6 +16,11 @@ public class RollState : IPlayerState
         this.player = player;
     }
 
+    // Solo se puede cancelar el rol en su tramo final (ventana de cancelación).
+    public bool CanInterrupt =>
+        player.RollData.duration <= 0f ||
+        elapsed >= player.RollData.duration - player.RollData.cancelWindow;
+
     public void Enter()
     {
         RollData data = player.RollData;

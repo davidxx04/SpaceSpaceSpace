@@ -32,6 +32,10 @@ public class RollData : ScriptableObject
     [Tooltip("Tiempo desde que empieza un rol hasta que se puede volver a rodar, en segundos.")]
     public float cooldown = 0.8f;
 
+    [Tooltip("Ventana de cancelación: cuánto ANTES de que termine el rol se puede ya empezar " +
+             "otra acción (ataque, parry...). 0 = acción totalmente comprometida.")]
+    public float cancelWindow = 0f;
+
     [Header("Feedback (opcional, sin uso aún)")]
     [Tooltip("VFX a instanciar al iniciar el rol. Aún no se consume gameplay.")]
     public GameObject vfxPrefab;

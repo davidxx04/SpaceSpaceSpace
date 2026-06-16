@@ -17,8 +17,6 @@ public struct DamageInfo
     }
 }
 
-// Contrato para cualquier cosa que pueda recibir daño. El jugador, el boss y cada
-// parte destruible del boss serán IDamageable independientes.
 public interface IDamageable
 {
     void TakeDamage(DamageInfo info);

@@ -7,4 +7,8 @@ public interface IPlayerState
     void Tick();        // se llama desde Update
     void FixedTick();   // se llama desde FixedUpdate (física)
     void Exit();
+
+    // ¿Se puede interrumpir AHORA este estado para empezar otra acción?
+    // Locomoción: siempre. Acciones (rol/ataque): solo dentro de su ventana de cancelación.
+    bool CanInterrupt { get; }
 }

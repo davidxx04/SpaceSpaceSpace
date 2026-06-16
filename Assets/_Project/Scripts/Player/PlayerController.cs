@@ -63,17 +63,39 @@ public class PlayerController : MonoBehaviour
     private void OnEnable()
     {
         Input.Enable();
+        Input.RollPerformed += OnRollInput;
+        Input.AttackPerformed += OnAttackInput;
         StateMachine.ChangeState(LocomotionState);
     }
 
     private void OnDisable()
     {
+        Input.RollPerformed -= OnRollInput;
+        Input.AttackPerformed -= OnAttackInput;
         Input.Disable();
     }
 
     private void OnDestroy()
     {
         Input.Dispose();
+    }
+
+    // Enrutado centralizado de los botones de acción. Un input solo prospera si el estado
+    // actual permite interrumpirse (ventana de cancelación) y la acción está fuera de cooldown.
+    private void OnRollInput()
+    {
+        if ((StateMachine.Current?.CanInterrupt ?? false) && CanRoll)
+        {
+            StateMachine.ChangeState(RollState);
+        }
+    }
+
+    private void OnAttackInput()
+    {
+        if ((StateMachine.Current?.CanInterrupt ?? false) && CanAttack)
+        {
+            StateMachine.ChangeState(AttackState);
+        }
     }
 
     private void Update()
