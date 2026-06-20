@@ -13,12 +13,19 @@ MonoBehaviour:
   m_Name: AttackData
   m_EditorClassIdentifier: 
   damage: 10
-  duration: 0.3
-  hitStart: 0.05
-  hitEnd: 0.35
-  hitboxDistance: 1
-  hitboxSize: {x: 1, y: 1}
-  moveMultiplier: 0
-  cooldown: 0.4
+  duration: 0.1
+  fireTime: 0.05
+  cooldown: 0.1
+  cancelWindow: 0
+  moveMultiplier: 1
+  projectilePrefab: {fileID: 1121132523409968560, guid: b1e3a30b6e957854daa0314a30ffa68d, type: 3}
+  spawnOffset: 0.6
+  projectileSpeed: 12
+  range: 12
+  pierce: 0
+  projectileCount: 1
+  spreadAngle: 0
+  recoilDistance: 0.25
+  recoilRecovery: 0.15
+  recoilMovesPlayer: 1
   vfxPrefab: {fileID: 0}
-  showDebugHitbox: 1

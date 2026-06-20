@@ -11,7 +11,6 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Transform aimIndicator;
     [SerializeField] private SpriteRenderer shipSprite;   // sprite de la nave (en un HIJO, no en la raíz)
-    [SerializeField] private Hitbox attackHitbox;
     [SerializeField] private RollData rollData;
     [SerializeField] private AttackData attackData;
     [SerializeField] private ParryData parryData;
@@ -27,7 +26,6 @@ public class PlayerController : MonoBehaviour
     public RollData RollData => rollData;
     public AttackData AttackData => attackData;
     public ParryData ParryData => parryData;
-    public Hitbox AttackHitbox => attackHitbox;
     public float WalkSpeed => walkSpeed;
 
     // Última dirección de apuntado (normalizada). La usan el rol y el indicador.
@@ -36,6 +34,13 @@ public class PlayerController : MonoBehaviour
 
     // Lado actual de la nave (izquierda/derecha); solo se actualiza con intención horizontal real.
     private bool shipFacingLeft;
+
+    // --- Recoil al disparar ---
+    private Vector3 shipBaseLocalPos;   // posición local "en reposo" del sprite de la nave
+    private Vector3 recoilOffset;       // desplazamiento visual actual del sprite (modo visual)
+    private float recoilReturnSpeed;    // velocidad de recuperación del offset visual
+    private Vector2 recoilBodyVel;      // velocidad de retroceso del cuerpo (modo físico)
+    private float recoilBodyDamp;       // tiempo de amortiguación del retroceso físico
 
     // Activado por RollState durante la ventana de i-frames. El receptor de daño lo consulta.
     public bool IsInvulnerable { get; set; }
@@ -72,6 +77,8 @@ public class PlayerController : MonoBehaviour
         RollState = new RollState(this);
         AttackState = new AttackState(this);
         ParryState = new ParryState(this);
+
+        if (shipSprite != null) shipBaseLocalPos = shipSprite.transform.localPosition;
     }
 
     private void OnEnable()
@@ -131,6 +138,14 @@ public class PlayerController : MonoBehaviour
     private void FixedUpdate()
     {
         StateMachine.FixedTick();
+
+        // Retroceso físico: se suma a la velocidad que haya fijado el estado y se amortigua.
+        if (recoilBodyVel != Vector2.zero)
+        {
+            rb.velocity += recoilBodyVel;
+            recoilBodyVel = Vector2.Lerp(recoilBodyVel, Vector2.zero, Time.fixedDeltaTime / recoilBodyDamp);
+            if (recoilBodyVel.sqrMagnitude < 0.0001f) recoilBodyVel = Vector2.zero;
+        }
     }
 
     // Mantiene la dirección de apuntado con el último input no nulo y orienta hacia ella el
@@ -163,6 +178,37 @@ public class PlayerController : MonoBehaviour
                 shipFacingLeft = AimDirection.x < 0f;
             }
             shipSprite.flipY = shipFacingLeft;
+        }
+    }
+
+    // Recoil visual: el sprite "rebota" hacia atrás y vuelve a su posición de reposo.
+    private void LateUpdate()
+    {
+        if (shipSprite == null) return;
+
+        if (recoilOffset != Vector3.zero)
+        {
+            recoilOffset = Vector3.MoveTowards(recoilOffset, Vector3.zero, recoilReturnSpeed * Time.deltaTime);
+        }
+        shipSprite.transform.localPosition = shipBaseLocalPos + recoilOffset;
+    }
+
+    // Aplica el retroceso al disparar. 'dir' es el sentido del retroceso (opuesto al disparo).
+    // Según recoilMovesPlayer mueve solo el sprite (visual) o empuja al jugador (físico).
+    public void ApplyRecoil(Vector2 dir, AttackData data)
+    {
+        if (data.recoilDistance <= 0f) return;
+        float recovery = Mathf.Max(0.01f, data.recoilRecovery);
+
+        if (data.recoilMovesPlayer)
+        {
+            recoilBodyVel = dir * (data.recoilDistance / recovery);
+            recoilBodyDamp = recovery;
+        }
+        else
+        {
+            recoilOffset = (Vector3)(dir * data.recoilDistance);
+            recoilReturnSpeed = data.recoilDistance / recovery;
         }
     }
 }

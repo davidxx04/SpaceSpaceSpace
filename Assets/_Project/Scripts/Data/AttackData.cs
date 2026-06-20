@@ -1,8 +1,7 @@
 using UnityEngine;
 
-// Datos ajustables del ataque básico, como asset (mismo patrón que RollData).
-// El ataque cargado del futuro será simplemente OTRO asset AttackData con números
-// mayores, sin tocar código.
+// Datos ajustables del ataque a distancia, como asset (mismo patrón que RollData/ParryData).
+// Un "ataque cargado" futuro será simplemente OTRO asset AttackData con números mayores.
 [CreateAssetMenu(menuName = "SpaceSpaceSpace/Attack Data", fileName = "AttackData")]
 public class AttackData : ScriptableObject
 {
@@ -10,41 +9,55 @@ public class AttackData : ScriptableObject
     public float damage = 10f;
 
     [Header("Tiempos")]
-    [Tooltip("Duración total del estado de ataque, en segundos.")]
-    public float duration = 0.3f;
+    [Tooltip("Duración total del estado de ataque (la recuperación tras disparar), en segundos.")]
+    public float duration = 0.25f;
 
     [Range(0f, 1f)]
-    [Tooltip("Fracción de la duración en la que la hitbox se ACTIVA. ~0 = casi instantáneo.")]
-    public float hitStart = 0.05f;
+    [Tooltip("Fracción de la duración en la que SALE el disparo. ~0 = casi instantáneo.")]
+    public float fireTime = 0.05f;
 
-    [Range(0f, 1f)]
-    [Tooltip("Fracción de la duración en la que la hitbox se DESACTIVA.")]
-    public float hitEnd = 0.35f;
+    [Tooltip("Tiempo desde que disparas hasta que puedes volver a disparar (cadencia), en segundos.")]
+    public float cooldown = 0.3f;
 
-    [Header("Hitbox")]
-    [Tooltip("Distancia a la que se coloca la hitbox por delante, en la dirección de apuntado.")]
-    public float hitboxDistance = 1f;
-
-    [Tooltip("Tamaño de la caja de golpeo (ancho x alto).")]
-    public Vector2 hitboxSize = new Vector2(1f, 1f);
-
-    [Header("Movimiento durante el ataque")]
-    [Tooltip("Multiplica la velocidad de caminado mientras se ataca. " +
-             "0 = anclado, 1 = igual, >1 = más rápido.")]
-    public float moveMultiplier = 0f;
-
-    [Header("Cooldown / Feedback")]
-    [Tooltip("Tiempo desde que empieza un ataque hasta que se puede volver a atacar, en segundos.")]
-    public float cooldown = 0.4f;
-
-    [Tooltip("Ventana de cancelación: cuánto ANTES de que termine el ataque se puede ya empezar " +
-             "otra acción (rol, parry...). 0 = acción totalmente comprometida.")]
+    [Tooltip("Ventana de cancelación: cuánto ANTES de que termine el ataque puedes ya empezar otra acción.")]
     public float cancelWindow = 0f;
 
-    [Tooltip("VFX opcional a instanciar al atacar (sin uso obligatorio).")]
-    public GameObject vfxPrefab;
+    [Tooltip("Multiplica la velocidad de caminado mientras disparas. 0 = anclado, 1 = igual.")]
+    public float moveMultiplier = 1f;
 
-    [Header("Debug")]
-    [Tooltip("Dibuja la caja de la hitbox con gizmos: gris en reposo, verde mientras golpea.")]
-    public bool showDebugHitbox;
+    [Header("Proyectil")]
+    public Projectile projectilePrefab;
+
+    [Tooltip("A qué distancia del centro nace la bala (el morro de la nave).")]
+    public float spawnOffset = 0.6f;
+
+    public float projectileSpeed = 12f;
+
+    [Tooltip("Alcance máximo en unidades; la bala muere al recorrerlo o al impactar.")]
+    public float range = 8f;
+
+    [Tooltip("Si la bala atraviesa enemigos (true) o muere al primer impacto (false).")]
+    public bool pierce = false;
+
+    [Header("Patrón (bullet-hell)")]
+    [Min(1)]
+    [Tooltip("Número de balas por disparo.")]
+    public int projectileCount = 1;
+
+    [Tooltip("Apertura total del abanico en grados (solo si projectileCount > 1).")]
+    public float spreadAngle = 0f;
+
+    [Header("Recoil (retroceso al disparar)")]
+    [Tooltip("Cuánto retrocede la nave al disparar (rebote hacia atrás).")]
+    public float recoilDistance = 0.2f;
+
+    [Tooltip("Tiempo en recuperar la posición tras el retroceso, en segundos.")]
+    public float recoilRecovery = 0.15f;
+
+    [Tooltip("false = solo rebota el sprite (visual). true = empuja al jugador de verdad (físico).")]
+    public bool recoilMovesPlayer = false;
+
+    [Header("Feedback")]
+    [Tooltip("VFX opcional (fogonazo) al disparar.")]
+    public GameObject vfxPrefab;
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -15,6 +16,9 @@ public class Hitbox : MonoBehaviour
     private DamageInfo damage;
     private bool showDebug;
     private readonly HashSet<IDamageable> alreadyHit = new HashSet<IDamageable>();
+
+    // Se dispara al impactar y dañar a un objetivo (lo usa la bala para despawnear).
+    public event Action<IDamageable> Hit;
 
     private void Awake()
     {
@@ -74,5 +78,6 @@ public class Hitbox : MonoBehaviour
 
         alreadyHit.Add(target);
         target.TakeDamage(damage);
+        Hit?.Invoke(target);
     }
 }

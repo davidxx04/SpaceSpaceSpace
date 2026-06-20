@@ -1,15 +1,14 @@
 using UnityEngine;
 
-// Ataque básico DIRECCIONAL: golpea en la dirección de apuntado activando una hitbox
-// de trigger durante una ventana configurable. La movilidad durante el ataque es
-// parametrizable (moveMultiplier). Sigue el patrón FSM + ScriptableObject.
+// Ataque a DISTANCIA: en fireTime dispara projectileCount balas en abanico hacia el
+// apuntado, aplica recoil y vuelve a locomoción. Sigue el patrón FSM + ScriptableObject.
 public class AttackState : IPlayerState
 {
     private readonly PlayerController player;
 
     private Vector2 direction;
     private float elapsed;
-    private bool hitboxActive;
+    private bool fired;
 
     public AttackState(PlayerController player)
     {
@@ -23,21 +22,10 @@ public class AttackState : IPlayerState
 
     public void Enter()
     {
-        AttackData data = player.AttackData;
-
-        direction = player.AimDirection;   // dirección de apuntado en el momento del golpe
+        direction = player.AimDirection;   // dirección de disparo (fija al iniciar el ataque)
         elapsed = 0f;
-        hitboxActive = false;
-        player.NextAttackTime = Time.time + data.cooldown;
-
-        PlaceHitbox(data);
-        player.AttackHitbox.SetDebug(data.showDebugHitbox);
-
-        if (data.vfxPrefab != null)
-        {
-            Vector2 pos = player.Rb.position + direction * data.hitboxDistance;
-            Object.Instantiate(data.vfxPrefab, pos, Quaternion.identity);
-        }
+        fired = false;
+        player.NextAttackTime = Time.time + player.AttackData.cooldown;
     }
 
     public void Tick() { }
@@ -47,23 +35,14 @@ public class AttackState : IPlayerState
         AttackData data = player.AttackData;
         elapsed += Time.fixedDeltaTime;
 
-        // Movimiento parametrizable durante el ataque (0 = anclado).
+        // Movimiento parametrizable mientras disparas (0 = anclado, 1 = igual).
         player.Rb.velocity = player.Input.MoveInput * (player.WalkSpeed * data.moveMultiplier);
 
         float t = data.duration > 0f ? Mathf.Clamp01(elapsed / data.duration) : 1f;
-
-        // Enciende/apaga la hitbox según la ventana de golpe configurada.
-        bool shouldBeActive = t >= data.hitStart && t <= data.hitEnd;
-        if (shouldBeActive && !hitboxActive)
+        if (!fired && t >= data.fireTime)
         {
-            var info = new DamageInfo(data.damage, player.gameObject, direction);
-            player.AttackHitbox.Activate(info);
-            hitboxActive = true;
-        }
-        else if (!shouldBeActive && hitboxActive)
-        {
-            player.AttackHitbox.Deactivate();
-            hitboxActive = false;
+            Fire(data);
+            fired = true;
         }
 
         if (elapsed >= data.duration)
@@ -72,20 +51,37 @@ public class AttackState : IPlayerState
         }
     }
 
-    public void Exit()
+    public void Exit() { }
+
+    private void Fire(AttackData data)
     {
-        player.AttackHitbox.Deactivate();
-        hitboxActive = false;
-    }
+        if (data.projectilePrefab != null)
+        {
+            Vector2 spawnPos = player.Rb.position + direction * data.spawnOffset;
+            float baseAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
 
-    private void PlaceHitbox(AttackData data)
-    {
-        Transform t = player.AttackHitbox.transform;
-        t.localPosition = direction * data.hitboxDistance;
+            int count = Mathf.Max(1, data.projectileCount);
+            float startAngle = baseAngle - data.spreadAngle * 0.5f;
+            float stepAngle = count > 1 ? data.spreadAngle / (count - 1) : 0f;
 
-        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-        t.localRotation = Quaternion.Euler(0f, 0f, angle);
+            for (int i = 0; i < count; i++)
+            {
+                float angle = count > 1 ? startAngle + stepAngle * i : baseAngle;
+                float rad = angle * Mathf.Deg2Rad;
+                Vector2 dir = new Vector2(Mathf.Cos(rad), Mathf.Sin(rad));
 
-        player.AttackHitbox.SetBoxSize(data.hitboxSize);
+                Projectile proj = Object.Instantiate(data.projectilePrefab, spawnPos, Quaternion.identity);
+                var info = new DamageInfo(data.damage, player.gameObject, dir);   // parryable=false (bala del jugador)
+                proj.Launch(dir, data.projectileSpeed, data.range, data.pierce, info);
+            }
+
+            if (data.vfxPrefab != null)
+            {
+                Object.Instantiate(data.vfxPrefab, spawnPos, Quaternion.Euler(0f, 0f, baseAngle));
+            }
+        }
+
+        // Recoil hacia atrás (opuesto al disparo).
+        player.ApplyRecoil(-direction, data);
     }
 }
