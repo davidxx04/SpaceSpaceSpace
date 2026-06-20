@@ -10,6 +10,7 @@ public class PlayerController : MonoBehaviour
     [Header("Refs")]
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Transform aimIndicator;
+    [SerializeField] private SpriteRenderer shipSprite;   // sprite de la nave (en un HIJO, no en la raíz)
     [SerializeField] private Hitbox attackHitbox;
     [SerializeField] private RollData rollData;
     [SerializeField] private AttackData attackData;
@@ -32,6 +33,9 @@ public class PlayerController : MonoBehaviour
     // Última dirección de apuntado (normalizada). La usan el rol y el indicador.
     // Por defecto "arriba" para que un rol sin haber movido nunca quede a cero.
     public Vector2 AimDirection { get; private set; } = Vector2.up;
+
+    // Lado actual de la nave (izquierda/derecha); solo se actualiza con intención horizontal real.
+    private bool shipFacingLeft;
 
     // Activado por RollState durante la ventana de i-frames. El receptor de daño lo consulta.
     public bool IsInvulnerable { get; set; }
@@ -129,8 +133,8 @@ public class PlayerController : MonoBehaviour
         StateMachine.FixedTick();
     }
 
-    // Mantiene la dirección de apuntado con el último input no nulo y orienta el
-    // indicador hacia ella.
+    // Mantiene la dirección de apuntado con el último input no nulo y orienta hacia ella el
+    // indicador y la nave.
     private void UpdateAim()
     {
         Vector2 move = Input.MoveInput;
@@ -139,11 +143,26 @@ public class PlayerController : MonoBehaviour
             AimDirection = move.normalized;
         }
 
+        float angle = Mathf.Atan2(AimDirection.y, AimDirection.x) * Mathf.Rad2Deg;
+
+        // Indicador: su flecha apunta hacia "arriba" (+Y) por defecto.
         if (aimIndicator != null)
         {
-            float angle = Mathf.Atan2(AimDirection.y, AimDirection.x) * Mathf.Rad2Deg;
-            // Se asume que el sprite de la flecha apunta hacia "arriba" (+Y) por defecto.
             aimIndicator.rotation = Quaternion.Euler(0f, 0f, angle - 90f);
+        }
+
+        // Nave: sprite lateral que mira a la DERECHA por defecto. Se rota hacia el apuntado y se
+        // voltea en vertical (flipY) cuando mira a la izquierda, para que no quede "panza arriba".
+        // El lado solo se actualiza con intención horizontal real, así al apuntar en vertical se
+        // conserva el último lado (la nave mira "como si viniera" de ese lado).
+        if (shipSprite != null)
+        {
+            shipSprite.transform.rotation = Quaternion.Euler(0f, 0f, angle);
+            if (Mathf.Abs(AimDirection.x) > 0.1f)
+            {
+                shipFacingLeft = AimDirection.x < 0f;
+            }
+            shipSprite.flipY = shipFacingLeft;
         }
     }
 }
