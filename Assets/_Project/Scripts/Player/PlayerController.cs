@@ -48,6 +48,11 @@ public class PlayerController : MonoBehaviour
     // Activado por ParryState durante su ventana activa. El receptor de daño lo consulta.
     public bool IsParrying { get; set; }
 
+    // Estado de lectura para el feedback visual (p. ej. el propulsor), expuesto como API
+    // pública para no acoplar esos componentes a los internos de la FSM.
+    public bool IsRolling => StateMachine.Current == RollState;
+    public bool ShipFacingLeft => shipFacingLeft;
+
     // Momento (Time.time) a partir del cual se puede volver a rodar.
     public float NextRollTime { get; set; }
     public bool CanRoll => Time.time >= NextRollTime;
