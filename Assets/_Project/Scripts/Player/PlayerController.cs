@@ -11,6 +11,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Transform aimIndicator;
     [SerializeField] private SpriteRenderer shipSprite;   // sprite de la nave (en un HIJO, no en la raíz)
+    [SerializeField] private AfterimageEmitter afterimage; // emisor de estelas del dash (opcional)
     [SerializeField] private RollData rollData;
     [SerializeField] private AttackData attackData;
     [SerializeField] private ParryData parryData;
@@ -53,6 +54,9 @@ public class PlayerController : MonoBehaviour
     public bool IsRolling => StateMachine.Current == RollState;
     public bool ShipFacingLeft => shipFacingLeft;
 
+    // Emisor de estelas del dash (lo usan los estados de rol/dash para arrancar/parar el rastro).
+    public AfterimageEmitter Afterimage => afterimage;
+
     // Momento (Time.time) a partir del cual se puede volver a rodar.
     public float NextRollTime { get; set; }
     public bool CanRoll => Time.time >= NextRollTime;
@@ -74,6 +78,7 @@ public class PlayerController : MonoBehaviour
     private void Awake()
     {
         if (rb == null) rb = GetComponent<Rigidbody2D>();
+        if (afterimage == null) afterimage = GetComponent<AfterimageEmitter>();
 
         Input = new PlayerInputReader();
         StateMachine = new PlayerStateMachine();

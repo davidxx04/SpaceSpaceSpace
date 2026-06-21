@@ -39,4 +39,7 @@ public class RollData : ScriptableObject
     [Header("Feedback (opcional, sin uso aún)")]
     [Tooltip("VFX a instanciar al iniciar el rol. Aún no se consume gameplay.")]
     public GameObject vfxPrefab;
+
+    [Tooltip("Estela (afterimage) que se emite mientras dura el rol. Vacío = sin estela.")]
+    public AfterimageData afterimage;
 }

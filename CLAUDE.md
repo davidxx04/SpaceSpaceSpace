@@ -23,8 +23,8 @@ Assets/_Project/
   Scripts/Player/   player controller, input reader, state machine
   Scripts/Player/States/  one file per FSM state (LocomotionState, RollState, AttackState, ParryState, ...)
   Scripts/Combat/   damage contract + shared combat components (IDamageable, IParryable, Health, Hitbox, Projectile, DamageFlash)
-  Scripts/Data/     ScriptableObject data assets (RollData, AttackData, ParryData, ...)
-  Scripts/Visual/   reusable visual helpers (SpriteFlipbook)
+  Scripts/Data/     ScriptableObject data assets (RollData, AttackData, ParryData, AfterimageData, ...)
+  Scripts/Visual/   reusable visual helpers (SpriteFlipbook, AfterimageEmitter/Afterimage)
   Scripts/_Testing/ throwaway test props (TestEnemyAttacker) — safe to delete
   Input/            input action assets + generated wrappers
   Scenes/           Menu, Game, Leaderboard
@@ -52,6 +52,7 @@ The player is built as a small **finite state machine + ScriptableObject tuning 
 - **`PlayerStateMachine` + `IPlayerState`** (`Enter/Tick/FixedTick/Exit`) — `ChangeState` exits the old state then enters the new. State instances are cached on the controller (no per-transition allocations).
 - **States** (`States/`): `LocomotionState` (slow walk + listens for roll) and `RollState` (curve-driven dash with i-frames + cooldown). `AttackState`/`ParryState` are future files; the input events for them are already wired.
 - **`RollData`** (`Scripts/Data/`, a `ScriptableObject`) — all roll tuning lives in an **asset** edited from the Inspector (distance, duration, `AnimationCurve` for fast→slow feel, i-frame window as 0..1 fractions, cooldown). Asset edits persist through Play mode, so the roll is balanced "hot". New abilities should follow this same SO-per-ability pattern (`AttackData`, `ParryData`).
+- **`AfterimageEmitter`** (`Scripts/Visual/`) — reusable dash "echo" trail: while emitting it leaves fading frozen copies (`Afterimage`) of a source `SpriteRenderer`, spawned **un-parented in world space** so they stay behind as the ship dashes. Tuned by an **`AfterimageData`** SO (`spawnInterval`, `lifetime`, `Gradient colorOverLife` defaulting white→transparent, `sortingOffset`, optional `material`). The roll opts in via `RollData.afterimage`; `RollState` calls `player.Afterimage.StartEmitting/StopEmitting`. A future harder dash reuses the same emitter with its own SO asset — no new code.
 - **`ShipThruster`** (`Scripts/Player/`) — exhaust/turbo VFX glue. Lives on a **child of the `Visual`** so it inherits the ship's rotation/position for free; it only syncs `flipY` (a `SpriteRenderer` property, not inherited). It picks the animation by state — moving → `flightFrames`, rolling → `turboFrames`, idle → off — and drives a generic **`SpriteFlipbook`** (`Scripts/Visual/`, a reusable code flipbook: `Sprite[]` cycled at a settable `FramesPerSecond`). It reads only `PlayerController` public API (`IsRolling`, `ShipFacingLeft`, `Input.MoveInput`), so nothing else knows the thruster exists.
 
 **Conventions for player code:** movement/physics writes go in `FixedTick` (use `rb.velocity` — this is Unity 2022.3, *not* `linearVelocity`); the curve-driven roll uses `rb.MovePosition`. `IsInvulnerable` is the hook the (future) damage system will read for dodge i-frames.

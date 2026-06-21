@@ -1620,6 +1620,7 @@ GameObject:
   - component: {fileID: 1698066389}
   - component: {fileID: 1698066383}
   - component: {fileID: 1698066388}
+  - component: {fileID: 1698066390}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -1642,6 +1643,7 @@ MonoBehaviour:
   rb: {fileID: 0}
   aimIndicator: {fileID: 725425772}
   shipSprite: {fileID: 186109066}
+  afterimage: {fileID: 0}
   rollData: {fileID: 11400000, guid: 35bbfe4a9471f534ebeba3de830dbc88, type: 2}
   attackData: {fileID: 11400000, guid: 899c65cd434589148bf025af80972cf7, type: 2}
   parryData: {fileID: 11400000, guid: 39fa8ed9084b2774998f1f101ea54612, type: 2}
@@ -1739,6 +1741,19 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 0.18
+--- !u!114 &1698066390
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1698066382}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b085872a8f5ad0e4b89a9c1304224876, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  source: {fileID: 186109066}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

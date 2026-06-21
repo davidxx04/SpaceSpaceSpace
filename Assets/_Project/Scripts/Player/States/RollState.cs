@@ -36,6 +36,12 @@ public class RollState : IPlayerState
         {
             Object.Instantiate(data.vfxPrefab, startPos, Quaternion.identity);
         }
+
+        // Estela del dash: se emite durante todo el rol y se detiene al salir.
+        if (player.Afterimage != null && data.afterimage != null)
+        {
+            player.Afterimage.StartEmitting(data.afterimage);
+        }
     }
 
     public void Tick() { }
@@ -65,5 +71,6 @@ public class RollState : IPlayerState
     public void Exit()
     {
         player.IsInvulnerable = false;
+        if (player.Afterimage != null) player.Afterimage.StopEmitting();
     }
 }
