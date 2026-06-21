@@ -13,9 +13,24 @@ public class AfterimageEmitter : MonoBehaviour
     private bool emitting;
     private float spawnTimer;
 
+    // Material de silueta sólida, creado una sola vez por código a partir del shader. Compartido
+    // por todas las estelas: el color por estela va por SpriteRenderer.color (no por el material),
+    // así no se generan instancias de material.
+    private static Material solidMaterial;
+
     private void Awake()
     {
         if (source == null) source = GetComponentInChildren<SpriteRenderer>();
+    }
+
+    private static Material GetSolidMaterial()
+    {
+        if (solidMaterial == null)
+        {
+            Shader shader = Shader.Find("SpaceSpaceSpace/AfterimageSolid");
+            if (shader != null) solidMaterial = new Material(shader) { name = "AfterimageSolid (auto)" };
+        }
+        return solidMaterial;
     }
 
     // Empieza a emitir con la configuración dada (p. ej. al entrar en el rol). null = no hace nada.
@@ -58,8 +73,12 @@ public class AfterimageEmitter : MonoBehaviour
         ghost.flipY = source.flipY;
         ghost.sortingLayerID = source.sortingLayerID;
         ghost.sortingOrder = source.sortingOrder + data.sortingOffset;
-        ghost.sharedMaterial = data.material != null ? data.material : source.sharedMaterial;
 
-        go.AddComponent<Afterimage>().Begin(source.sprite, data.colorOverLife, data.lifetime, data.useUnscaledTime);
+        // Silueta sólida por defecto (shader auto). Si el SO trae un material, manda ese.
+        // Último recurso (shader no encontrado): el material de la nave.
+        Material mat = data.material != null ? data.material : GetSolidMaterial();
+        ghost.sharedMaterial = mat != null ? mat : source.sharedMaterial;
+
+        go.AddComponent<Afterimage>().Begin(source.sprite, data.color, data.alphaOverLife, data.lifetime, data.useUnscaledTime);
     }
 }
