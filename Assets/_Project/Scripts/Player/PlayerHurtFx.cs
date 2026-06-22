@@ -14,7 +14,11 @@ public class PlayerHurtFx : MonoBehaviour
     [Tooltip("Overlay con SpriteRenderer + SpriteFlipbook (pingPong, sin loop, disableObjectOnFinish). Empieza desactivado.")]
     [SerializeField] private GameObject hurtOverlay;
 
+    [Tooltip("Parpadeo de la nave durante los i-frames de cortesía. Opcional.")]
+    [SerializeField] private SpriteBlink invulnerabilityBlink;
+
     private SpriteRenderer overlaySr;
+    private bool blinking;   // parpadeando por un golpe reciente (dura mientras siga invulnerable)
 
     private void Awake()
     {
@@ -27,12 +31,20 @@ public class PlayerHurtFx : MonoBehaviour
         }
     }
 
-    // Igual que el propulsor: el overlay es hijo del Visual y hereda la rotación, pero flipY es del
-    // SpriteRenderer y NO se hereda; hay que copiarlo para que las direcciones a la izquierda casen.
     private void LateUpdate()
     {
+        // Igual que el propulsor: el overlay es hijo del Visual y hereda la rotación, pero flipY es
+        // del SpriteRenderer y NO se hereda; hay que copiarlo para que las direcciones izquierda casen.
         if (overlaySr != null && player != null && hurtOverlay.activeSelf)
             overlaySr.flipY = player.ShipFacingLeft;
+
+        // Parpadeo de i-frames: arranca con el golpe y dura exactamente lo que el jugador siga
+        // invulnerable (un roll normal no dispara Hit, así que no parpadea).
+        if (invulnerabilityBlink != null)
+        {
+            if (blinking && (player == null || !player.IsInvulnerable)) blinking = false;
+            invulnerabilityBlink.Active = blinking;
+        }
     }
 
     private void OnEnable()
@@ -47,11 +59,15 @@ public class PlayerHurtFx : MonoBehaviour
 
     private void OnHit(DamageInfo info)
     {
-        if (hurtOverlay == null) return;
+        // El receptor ya concedió la invulnerabilidad antes de avisar: arrancamos el parpadeo.
+        blinking = true;
 
-        // Reactivar fuerza OnEnable -> Play() y reinicia la animación aunque ya estuviese en curso
-        // (golpes encadenados).
-        hurtOverlay.SetActive(false);
-        hurtOverlay.SetActive(true);
+        if (hurtOverlay != null)
+        {
+            // Reactivar fuerza OnEnable -> Play() y reinicia la animación aunque ya estuviese en curso
+            // (golpes encadenados).
+            hurtOverlay.SetActive(false);
+            hurtOverlay.SetActive(true);
+        }
     }
 }

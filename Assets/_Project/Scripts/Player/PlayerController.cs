@@ -43,8 +43,24 @@ public class PlayerController : MonoBehaviour
     private Vector2 recoilBodyVel;      // velocidad de retroceso del cuerpo (modo físico)
     private float recoilBodyDamp;       // tiempo de amortiguación del retroceso físico
 
-    // Activado por RollState durante la ventana de i-frames. El receptor de daño lo consulta.
-    public bool IsInvulnerable { get; set; }
+    // Invulnerabilidad que consulta el receptor de daño. Es la SUMA de varias fuentes:
+    //  - la ventana de i-frames del rol (la escribe RollState con el setter),
+    //  - una ventana temporal concedida por GrantInvulnerability (gracia tras recibir un golpe, etc.).
+    private bool rollInvulnerable;
+    private float invulnerableUntil;
+    public bool IsInvulnerable
+    {
+        get => rollInvulnerable || Time.time < invulnerableUntil;
+        set => rollInvulnerable = value;   // RollState sigue escribiendo su ventana aquí
+    }
+
+    // Concede invulnerabilidad temporal (i-frames de cortesía tras un golpe, etc.). No pisa el rol;
+    // si se solapan, se queda con la ventana que termine más tarde.
+    public void GrantInvulnerability(float seconds)
+    {
+        if (seconds <= 0f) return;
+        invulnerableUntil = Mathf.Max(invulnerableUntil, Time.time + seconds);
+    }
 
     // Activado por ParryState durante su ventana activa. El receptor de daño lo consulta.
     public bool IsParrying { get; set; }

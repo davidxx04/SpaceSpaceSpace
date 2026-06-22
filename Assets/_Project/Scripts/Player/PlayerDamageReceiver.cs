@@ -10,6 +10,9 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
 {
     [SerializeField] private PlayerController player;
 
+    [Tooltip("Segundos de invulnerabilidad de cortesía tras recibir un golpe real (i-frames). Evita encadenar golpes. 0 = sin gracia.")]
+    [SerializeField] private float hitInvulnerabilitySeconds = 1f;
+
     [Tooltip("Logs en consola para depurar el parry. Quítalo cuando ya no haga falta.")]
     [SerializeField] private bool logForDebug = true;
 
@@ -45,6 +48,8 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         }
 
         // 3) Daño normal (de momento el jugador aún no tiene Health).
+        // Gracia: concede i-frames ANTES de avisar, para que los oyentes ya vean IsInvulnerable activo.
+        player.GrantInvulnerability(hitInvulnerabilitySeconds);
         if (logForDebug) Debug.Log($"[Player] te habría dado: {info.amount}");
         Hit?.Invoke(info);
     }

@@ -25,7 +25,7 @@ public class ParrySuccessFx : MonoBehaviour
 
     private void Awake()
     {
-        if (receiver == null) receiver = GetComponent<PlayerDamageReceiver>();
+        if (receiver == null) receiver = GetComponentInParent<PlayerDamageReceiver>();
         if (cameraShake == null && Camera.main != null) cameraShake = Camera.main.GetComponent<CameraShake>();
     }
 
