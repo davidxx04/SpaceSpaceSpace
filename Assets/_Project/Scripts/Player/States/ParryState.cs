@@ -44,6 +44,9 @@ public class ParryState : IPlayerState
         float t = data.duration > 0f ? Mathf.Clamp01(elapsed / data.duration) : 1f;
         player.IsParrying = t >= data.parryWindowStart && t <= data.parryWindowEnd;
 
+        // Progreso 0..1 dentro de la ventana, para que el aura encoja el anillo de timing.
+        player.ParryWindowProgress = Mathf.InverseLerp(data.parryWindowStart, data.parryWindowEnd, t);
+
         if (elapsed >= data.duration)
         {
             player.IsParrying = false;

@@ -49,6 +49,10 @@ public class PlayerController : MonoBehaviour
     // Activado por ParryState durante su ventana activa. El receptor de daño lo consulta.
     public bool IsParrying { get; set; }
 
+    // Progreso dentro de la ventana de parry (0 al abrirse, 1 al cerrarse). Lo escribe ParryState
+    // y lo lee el VFX del aura para encoger el anillo de timing.
+    public float ParryWindowProgress { get; set; }
+
     // Estado de lectura para el feedback visual (p. ej. el propulsor), expuesto como API
     // pública para no acoplar esos componentes a los internos de la FSM.
     public bool IsRolling => StateMachine.Current == RollState;

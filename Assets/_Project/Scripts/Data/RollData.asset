@@ -41,6 +41,6 @@ MonoBehaviour:
   iFrameStart: 0
   iFrameEnd: 0.5
   cooldown: 0.4
-  cancelWindow: 0.2
+  cancelWindow: 0.275
   vfxPrefab: {fileID: 0}
   afterimage: {fileID: 11400000, guid: 8d6f4b484fb4e3c42b83811d562dd83e, type: 2}
