@@ -39,7 +39,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   iFrameStart: 0
-  iFrameEnd: 0.5
+  iFrameEnd: 0
   cooldown: 0.4
   cancelWindow: 0.275
   vfxPrefab: {fileID: 0}
