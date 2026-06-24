@@ -16,6 +16,7 @@ MonoBehaviour:
   parryWindowStart: 0
   parryWindowEnd: 0.7
   cancelWindow: 0.6
+  cancelOnSuccess: 1
   moveMultiplier: 0
-  cooldown: 0.2
+  cooldown: 0.7
   vfxPrefab: {fileID: 0}

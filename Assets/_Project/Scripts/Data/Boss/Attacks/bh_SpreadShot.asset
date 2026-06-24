@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: bh_SpreadShot
   m_EditorClassIdentifier: 
   id: atk
-  parryable: 1
+  parryable: 0
   telegraphSeconds: 0.4
   recoverySeconds: 0.3
   telegraphVfx: {fileID: 0}

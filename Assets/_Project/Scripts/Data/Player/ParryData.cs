@@ -20,6 +20,10 @@ public class ParryData : ScriptableObject
     [Tooltip("Ventana de cancelación: cuánto ANTES de que termine el parry se puede ya empezar otra acción.")]
     public float cancelWindow = 0f;
 
+    [Tooltip("Al ACERTAR un parry: cancela su cooldown y permite encadenar cualquier acción al " +
+             "instante (como una cancel window). El re-parry queda disponible al momento.")]
+    public bool cancelOnSuccess = true;
+
     [Tooltip("Multiplica la velocidad de caminado durante el parry. 0 = anclado.")]
     public float moveMultiplier = 0f;
 

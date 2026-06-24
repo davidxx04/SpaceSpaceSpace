@@ -8,13 +8,19 @@ public class ParryState : IPlayerState
     private readonly PlayerController player;
     private float elapsed;
 
+    // ¿Esta activación de parry ya acertó? Habilita la cancelación inmediata y sirve de dedup
+    // (1 parry = 1 acierto contable, aunque desvíe varios golpes en la misma ventana).
+    private bool landed;
+
     public ParryState(PlayerController player)
     {
         this.player = player;
     }
 
-    // Solo se puede cancelar el parry en su tramo final (ventana de cancelación).
+    // Se puede cancelar el parry: al ACERTAR (si cancelOnSuccess, abre la cancel window al instante)
+    // o en su tramo final (ventana de cancelación normal).
     public bool CanInterrupt =>
+        (landed && player.ParryData.cancelOnSuccess) ||
         player.ParryData.duration <= 0f ||
         elapsed >= player.ParryData.duration - player.ParryData.cancelWindow;
 
@@ -22,12 +28,26 @@ public class ParryState : IPlayerState
     {
         ParryData data = player.ParryData;
         elapsed = 0f;
+        landed = false;
         player.NextParryTime = Time.time + data.cooldown;
 
         if (data.vfxPrefab != null)
         {
             Object.Instantiate(data.vfxPrefab, player.Rb.position, Quaternion.identity);
         }
+    }
+
+    // Lo llama PlayerController cuando PlayerDamageReceiver confirma un parry. Marca el acierto:
+    // habilita la cancelación inmediata (como entrar en la cancel window) y cancela el cooldown del
+    // parry para poder re-parrear al instante. Devuelve true solo la PRIMERA vez de esta activación
+    // (1 parry = 1 acierto contable; útil para la futura energía del ataque especial).
+    public bool RegisterSuccess()
+    {
+        bool firstThisActivation = !landed;
+        landed = true;
+        if (firstThisActivation && player.ParryData.cancelOnSuccess)
+            player.NextParryTime = Time.time;
+        return firstThisActivation;
     }
 
     public void Tick() { }

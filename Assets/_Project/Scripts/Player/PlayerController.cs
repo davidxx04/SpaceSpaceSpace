@@ -159,6 +159,13 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    // Lo llama PlayerDamageReceiver al confirmar un parry acertado. Reenvía la señal al ParryState
+    // activo (que habilita el encadenado y cancela el cooldown del parry para re-parrear al instante).
+    public void NotifyParrySuccess()
+    {
+        if (StateMachine.Current == ParryState) ParryState.RegisterSuccess();
+    }
+
     private void Update()
     {
         UpdateAim();

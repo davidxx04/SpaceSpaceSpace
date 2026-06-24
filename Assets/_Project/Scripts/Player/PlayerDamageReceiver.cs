@@ -37,6 +37,9 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
             {
                 parried.OnParried();
             }
+
+            // Reacción de gameplay del propio jugador: habilita encadenar (re-parry / cancelar) al acertar.
+            player.NotifyParrySuccess();
             return;
         }
 
