@@ -43,7 +43,8 @@ public class BossContext
             return null;
         }
 
-        Projectile proj = Object.Instantiate(ProjectilePrefab, pos, Quaternion.identity);
+        Projectile proj = PoolManager.Spawn(ProjectilePrefab, pos, Quaternion.identity);
+        if (proj == null) return null;
         var info = new DamageInfo(damage, Boss != null ? Boss.gameObject : null, dir) { parryable = parryable };
         proj.Launch(dir, speed, range, pierce, info);
         return proj;

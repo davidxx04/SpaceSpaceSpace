@@ -15,14 +15,19 @@ public class Projectile : MonoBehaviour
     private float maxDistance;
     private bool pierce;
     private float traveled;
+    private bool despawned;   // evita devolver la misma bala al pool dos veces en un frame
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         hitbox = GetComponent<Hitbox>();
+
+        // Suscripción ÚNICA (Awake solo corre al instanciar, no al reusar del pool): así el reúso no
+        // duplica el handler. El despawn no toca la suscripción; OnDestroy la quita por seguridad.
+        hitbox.Hit += OnHit;
     }
 
-    // Lo llama quien dispara, justo después de instanciar la bala.
+    // Lo llama quien dispara, justo después de obtener la bala (del pool o instanciada).
     public void Launch(Vector2 dir, float speed, float range, bool pierce, DamageInfo damage)
     {
         direction = dir.normalized;
@@ -30,12 +35,12 @@ public class Projectile : MonoBehaviour
         maxDistance = range;
         this.pierce = pierce;
         traveled = 0f;
+        despawned = false;
 
         // Orienta la bala hacia su dirección (sprite mirando a la derecha por defecto).
         rb.SetRotation(Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg);
 
-        hitbox.Hit += OnHit;
-        hitbox.Activate(damage);
+        hitbox.Activate(damage);   // limpia 'alreadyHit' y enciende el collider
     }
 
     private void FixedUpdate()
@@ -57,8 +62,11 @@ public class Projectile : MonoBehaviour
 
     private void Despawn()
     {
-        if (hitbox != null) hitbox.Hit -= OnHit;
-        Destroy(gameObject);
+        if (despawned) return;
+        despawned = true;
+
+        if (hitbox != null) hitbox.Deactivate();   // apaga el collider antes de devolver al pool
+        PoolManager.Despawn(gameObject);           // vuelve al pool (o Destroy si no salió de uno)
     }
 
     private void OnDestroy()
