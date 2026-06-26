@@ -19,6 +19,9 @@ public class AttackData : ScriptableObject
     [Tooltip("Tiempo desde que disparas hasta que puedes volver a disparar (cadencia), en segundos.")]
     public float cooldown = 0.3f;
 
+    [Tooltip("Si está marcado, disparas en AUTOMÁTICO mientras MANTIENES pulsado (cadencia = cooldown).")]
+    public bool automatic = false;
+
     [Tooltip("Ventana de cancelación: cuánto ANTES de que termine el ataque puedes ya empezar otra acción.")]
     public float cancelWindow = 0f;
 

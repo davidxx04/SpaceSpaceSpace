@@ -839,10 +839,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   preload:
   - prefab: {fileID: 365785502987384549, guid: b1e3a30b6e957854daa0314a30ffa68d, type: 3}
-    prewarm: 60
+    prewarm: 100
     maxSize: 600
   - prefab: {fileID: 365785502987384549, guid: d8d0758346e345843a0f5cf09ec2bb99, type: 3}
     prewarm: 100
+    maxSize: 800
+  - prefab: {fileID: 365785502987384549, guid: 3f88aba8a210744439189d185a3ad46f, type: 3}
+    prewarm: 50
     maxSize: 800
 --- !u!4 &661115854
 Transform:

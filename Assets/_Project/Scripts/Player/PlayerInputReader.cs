@@ -14,6 +14,9 @@ public class PlayerInputReader : ArcadeControls.IPlayerActions, IDisposable
     // Vector de movimiento continuo (consultar cada frame).
     public Vector2 MoveInput { get; private set; }
 
+    // Estado de "mantenido" del botón de ataque (para disparo automático; consultar cada frame).
+    public bool AttackHeld => controls.Player.Attack.IsPressed();
+
     // Se disparan una vez al pulsar el botón correspondiente.
     public event Action RollPerformed;
     public event Action AttackPerformed;   // cableado, sin uso aún

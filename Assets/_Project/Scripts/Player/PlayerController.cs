@@ -143,7 +143,11 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void OnAttackInput()
+    private void OnAttackInput() => TryStartAttack();
+
+    // Inicia el ataque si el estado actual permite interrumpirse y está fuera de cooldown.
+    // Lo llaman el input de ataque (al pulsar) y el disparo automático (mientras se mantiene).
+    private void TryStartAttack()
     {
         if ((StateMachine.Current?.CanInterrupt ?? false) && CanAttack)
         {
@@ -170,6 +174,9 @@ public class PlayerController : MonoBehaviour
     {
         UpdateAim();
         StateMachine.Tick();
+
+        // Disparo automático: mientras se MANTIENE pulsado y el AttackData lo permite (gated por cooldown).
+        if (attackData != null && attackData.automatic && Input.AttackHeld) TryStartAttack();
     }
 
     private void FixedUpdate()

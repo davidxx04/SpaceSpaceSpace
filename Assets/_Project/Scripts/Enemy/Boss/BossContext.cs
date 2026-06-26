@@ -10,7 +10,8 @@ public class BossContext
     public Transform Player;             // objetivo
     public MonoBehaviour Runner;         // el Director: para StartCoroutine si un ataque lanza corrutinas en paralelo
     public Transform[] Muzzles;          // puntos de disparo opcionales (cañones)
-    public Projectile ProjectilePrefab;  // bala del boss (su Hitbox debe apuntar a la capa Player)
+    public Projectile ProjectilePrefab;  // bala NO parreable (su Hitbox debe apuntar a la capa Player)
+    public Projectile ParryableProjectilePrefab;  // bala PARREABLE (otro prefab/sprite); opcional
     public BossMovement Movement;        // movimiento, por si un ataque quiere reposicionar
 
     // Dirección normalizada desde 'from' hacia el jugador (Vector2.up de fallback si no hay jugador).
@@ -37,13 +38,19 @@ public class BossContext
     // notificar a IParryable) -> Launch. 'parryable' decide bullet-hell (false) vs sekiro (true).
     public Projectile Spawn(Vector2 pos, Vector2 dir, float speed, float range, bool pierce, float damage, bool parryable)
     {
-        if (ProjectilePrefab == null)
+        // El prefab VISUAL lo decide 'parryable' (código de color: bala normal roja vs bala parreable
+        // cian, cada una su propio prefab/sprite/animación). Si no hay prefab parreable, usa el normal.
+        Projectile prefab = parryable && ParryableProjectilePrefab != null
+            ? ParryableProjectilePrefab
+            : ProjectilePrefab;
+
+        if (prefab == null)
         {
-            Debug.LogWarning("[BossContext] No hay ProjectilePrefab asignado; no se dispara.");
+            Debug.LogWarning("[BossContext] No hay prefab de bala asignado; no se dispara.");
             return null;
         }
 
-        Projectile proj = PoolManager.Spawn(ProjectilePrefab, pos, Quaternion.identity);
+        Projectile proj = PoolManager.Spawn(prefab, pos, Quaternion.identity);
         if (proj == null) return null;
         var info = new DamageInfo(damage, Boss != null ? Boss.gameObject : null, dir) { parryable = parryable };
         proj.Launch(dir, speed, range, pierce, info);

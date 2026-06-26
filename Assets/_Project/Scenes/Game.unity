@@ -1584,6 +1584,7 @@ MonoBehaviour:
   movement: {fileID: 0}
   muzzles: []
   bossProjectile: {fileID: 1121132523409968560, guid: d8d0758346e345843a0f5cf09ec2bb99, type: 3}
+  parryableBossProjectile: {fileID: 1121132523409968560, guid: 3f88aba8a210744439189d185a3ad46f, type: 3}
   phases:
   - {fileID: 11400000, guid: dbe197a626f7a7b40be87c2748c43845, type: 2}
   introSeconds: 1.5
