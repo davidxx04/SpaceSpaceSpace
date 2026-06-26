@@ -62,6 +62,11 @@ public class PlayerController : MonoBehaviour
         invulnerableUntil = Mathf.Max(invulnerableUntil, Time.time + seconds);
     }
 
+    // Disparo automático: cuando el jugador rueda/parrea MIENTRAS mantiene pulsado el botón de ataque,
+    // se "consume" ese mantenido para que el auto-fire NO se reanude solo al abrirse la cancel window
+    // (se sentiría como un bug). Para reanudar hay que SOLTAR y volver a pulsar K (ya es intención clara).
+    private bool attackHoldConsumed;
+
     // Activado por ParryState durante su ventana activa. El receptor de daño lo consulta.
     public bool IsParrying { get; set; }
 
@@ -140,6 +145,7 @@ public class PlayerController : MonoBehaviour
         if ((StateMachine.Current?.CanInterrupt ?? false) && CanRoll)
         {
             StateMachine.ChangeState(RollState);
+            attackHoldConsumed = true;   // consume el mantenido de K: el auto-fire no se reanuda solo tras el roll
         }
     }
 
@@ -160,6 +166,7 @@ public class PlayerController : MonoBehaviour
         if ((StateMachine.Current?.CanInterrupt ?? false) && CanParry)
         {
             StateMachine.ChangeState(ParryState);
+            attackHoldConsumed = true;   // mismo criterio que el roll: parrear con K mantenida no reanuda el auto-fire
         }
     }
 
@@ -175,8 +182,12 @@ public class PlayerController : MonoBehaviour
         UpdateAim();
         StateMachine.Tick();
 
-        // Disparo automático: mientras se MANTIENE pulsado y el AttackData lo permite (gated por cooldown).
-        if (attackData != null && attackData.automatic && Input.AttackHeld) TryStartAttack();
+        // Al soltar el botón de ataque se "rearma": el siguiente mantenido vuelve a poder auto-disparar.
+        if (!Input.AttackHeld) attackHoldConsumed = false;
+
+        // Disparo automático: mientras se MANTIENE pulsado, el AttackData lo permite y el mantenido no se ha
+        // consumido por un roll/parry previo (gated además por el cooldown).
+        if (attackData != null && attackData.automatic && Input.AttackHeld && !attackHoldConsumed) TryStartAttack();
     }
 
     private void FixedUpdate()
