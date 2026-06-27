@@ -12,6 +12,7 @@ public class BossContext
     public Transform[] Muzzles;          // puntos de disparo opcionales (cañones)
     public Projectile ProjectilePrefab;  // bala NO parreable (su Hitbox debe apuntar a la capa Player)
     public Projectile ParryableProjectilePrefab;  // bala PARREABLE (otro prefab/sprite); opcional
+    public BossArea AreaPrefab;          // prefab del área (zona telegrafiada por barra de relleno); opcional
     public BossMovement Movement;        // movimiento, por si un ataque quiere reposicionar
 
     // Dirección normalizada desde 'from' hacia el jugador (Vector2.up de fallback si no hay jugador).
@@ -55,5 +56,16 @@ public class BossContext
         var info = new DamageInfo(damage, Boss != null ? Boss.gameObject : null, dir) { parryable = parryable };
         proj.Launch(dir, speed, range, pierce, info);
         return proj;
+    }
+
+    // Instancia un área de ataque pooleada en 'pos'. La configura y dirige el AreaAttackSO.
+    public BossArea SpawnArea(Vector2 pos)
+    {
+        if (AreaPrefab == null)
+        {
+            Debug.LogWarning("[BossContext] No hay prefab de área asignado; no se lanza el área.");
+            return null;
+        }
+        return PoolManager.Spawn(AreaPrefab, pos, Quaternion.identity);
     }
 }

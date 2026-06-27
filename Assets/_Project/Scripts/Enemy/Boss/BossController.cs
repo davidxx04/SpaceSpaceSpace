@@ -18,6 +18,7 @@ public class BossController : MonoBehaviour, IParryable
     [SerializeField] private Transform[] muzzles;           // puntos de disparo (cañones); opcional
     [SerializeField] private Projectile bossProjectile;          // bala NO parreable (roja)
     [SerializeField] private Projectile parryableBossProjectile; // bala PARREABLE (cian); opcional
+    [SerializeField] private BossArea bossArea;                  // prefab del área (zona telegrafiada); opcional
 
     [Header("Fases (ORDENADAS de más vida a menos: enterAtHealthFraction 1.0, 0.66, 0.33...)")]
     [SerializeField] private BossPhaseData[] phases;
@@ -79,6 +80,7 @@ public class BossController : MonoBehaviour, IParryable
             Muzzles = muzzles,
             ProjectilePrefab = bossProjectile,
             ParryableProjectilePrefab = parryableBossProjectile,
+            AreaPrefab = bossArea,
             Movement = movement,
         };
 
