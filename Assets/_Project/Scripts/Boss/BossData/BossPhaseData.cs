@@ -26,10 +26,15 @@ public class BossPhaseData : ScriptableObject
     [Tooltip("Combos disponibles en esta fase (se usan si useCombos = true).")]
     public BossComboSO[] combos;
 
-    public enum Selection { Sequential, Random }
+    public enum Selection { Sequential, Random, Shuffle }
 
-    [Tooltip("Sequential = recorre el repertorio en orden (memorizable). Random = aleatorio.")]
-    public Selection selection = Selection.Sequential;
+    [Tooltip("Cómo se eligen los ATAQUES SUELTOS. Shuffle = aleatorio orgánico (baraja sin repetir el " +
+             "inmediato anterior) = se siente natural. Random = azar puro. Sequential = en orden.")]
+    public Selection singleSelection = Selection.Shuffle;
+
+    [Tooltip("Cómo se eligen los COMBOS. Sequential = en orden (memorizable, recomendado). " +
+             "Shuffle/Random = variar el orden.")]
+    public Selection comboSelection = Selection.Sequential;
 
     [Header("Agresividad")]
     [Tooltip("Pausa entre acciones, en segundos (rango aleatorio min/max). Menor = más agresivo.")]

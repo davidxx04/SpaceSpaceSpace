@@ -17,6 +17,7 @@ public class BossCombatState : IBossState
     public void Exit()
     {
         boss.Director.Stop();
+        boss.ClearSpawnedAttacks();   // limpia áreas/swooshes/balas en vuelo (sin esto quedan dibujados)
     }
 
     public void Tick() { }

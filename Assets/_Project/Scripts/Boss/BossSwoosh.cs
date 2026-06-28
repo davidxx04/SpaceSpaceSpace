@@ -1,14 +1,14 @@
 using UnityEngine;
 
-// Primitivo SWOOSH del boss: una "barra" que BARRE en una dirección, POOLEADA (IPoolable). Espejo de
-// BossArea pero móvil. Visual procedural (sin arte): una LÍNEA fina de telegrafía (apunta en la
-// dirección de lanzamiento, color de verbo) + una BARRA cuerpo (perpendicular a la dirección) que
-// lleva el Hitbox. La coreografía (telegraph -> barrido) la dirige SwooshAttackSO moviendo el
-// transform; aquí solo viven los visuales + el Hitbox.
+// Primitivo SWOOSH del boss: una "onda" en forma de media luna que BARRE en una dirección, POOLEADA
+// (IPoolable). Espejo de BossArea pero móvil. Visual procedural (sin arte): una LÍNEA fina de
+// telegrafía (apunta en la dirección de lanzamiento, color de verbo) + un CUERPO con forma de
+// CRECIENTE (shader SpriteSwoosh) que lleva el Hitbox. La coreografía (telegraph -> barrido) la
+// dirige SwooshAttackSO moviendo el transform; aquí solo viven los visuales + el Hitbox.
 //
 // Convención de orientación: la RAÍZ se rota para que su +X local = dirección de avance. Los hijos
-// (línea, cuerpo, Hitbox) quedan a rotación local identidad, así +X = avance e +Y = perpendicular.
-// (v1 = barra recta; el arco ondeado real es flair de shader futuro, mismo encapsulado.)
+// (línea, cuerpo, Hitbox) quedan a rotación local identidad, así +X = avance (el bulto del creciente)
+// e +Y = perpendicular (el eje largo punta-a-punta). El creciente se estira a la caja del hitbox.
 [DisallowMultipleComponent]
 public class BossSwoosh : MonoBehaviour, IPoolable
 {
@@ -26,8 +26,8 @@ public class BossSwoosh : MonoBehaviour, IPoolable
 
     private void Awake()
     {
-        if (line == null) line = CreateQuad("SwooshLine", sortingOrder);
-        if (body == null) body = CreateQuad("SwooshBody", sortingOrder + 1);
+        if (line == null) line = CreateQuad("SwooshLine", sortingOrder, null);
+        if (body == null) body = CreateQuad("SwooshBody", sortingOrder + 1, GetCrescentMaterial());
         line.enabled = false;
         body.enabled = false;
     }
@@ -91,13 +91,29 @@ public class BossSwoosh : MonoBehaviour, IPoolable
         transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg);
     }
 
-    private SpriteRenderer CreateQuad(string n, int order)
+    private SpriteRenderer CreateQuad(string n, int order, Material mat)
     {
         var go = new GameObject(n);
         go.transform.SetParent(transform, false);
         var sr = go.AddComponent<SpriteRenderer>();
         sr.sprite = PrimitiveQuad.Unit;
         sr.sortingOrder = order;
+        if (mat != null) sr.sharedMaterial = mat;
         return sr;
+    }
+
+    // Material del creciente (forma de "onda") reusando el shader SpriteSwoosh. Cacheado static ->
+    // compartido por todos los swooshes (el color por-verbo va por SpriteRenderer.color, batching-friendly).
+    // Si el shader no está, el cuerpo cae a su material por defecto (rectángulo) sin romperse.
+    private static Material crescentMaterial;
+
+    private static Material GetCrescentMaterial()
+    {
+        if (crescentMaterial == null)
+        {
+            Shader s = Shader.Find("SpaceSpaceSpace/SpriteSwoosh");
+            if (s != null) crescentMaterial = new Material(s) { name = "SwooshCrescent (auto)" };
+        }
+        return crescentMaterial;
     }
 }

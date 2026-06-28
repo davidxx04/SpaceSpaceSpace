@@ -140,6 +140,17 @@ public class BossController : MonoBehaviour, IParryable
     // Lo llama BossDefeatedState al entrar.
     public void NotifyDefeated() => Defeated?.Invoke();
 
+    // Devuelve al pool todo lo que el boss tenga en vuelo (áreas, swooshes, balas) para que no quede
+    // ningún ataque "dibujado a medias" (visual/hitbox) al dejar de atacar. Lo llaman los estados al
+    // salir de combate (Stagger/Defeated). No toca el pool del jugador.
+    public void ClearSpawnedAttacks()
+    {
+        PoolManager.ReleaseActive(bossProjectile);
+        PoolManager.ReleaseActive(parryableBossProjectile);
+        PoolManager.ReleaseActive(bossArea);
+        PoolManager.ReleaseActive(bossSwoosh);
+    }
+
     private void OnCoreDamaged(DamageInfo _) => UpdatePhase();
 
     private void OnCoreDied()

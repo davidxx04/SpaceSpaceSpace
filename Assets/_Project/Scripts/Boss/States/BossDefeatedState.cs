@@ -9,6 +9,7 @@ public class BossDefeatedState : IBossState
     public void Enter()
     {
         boss.Director.Stop();
+        boss.ClearSpawnedAttacks();   // seguridad terminal: nada de ataques dibujados tras la muerte
         boss.Movement?.SetBehavior(BossMoveBehavior.Hold);
         boss.NotifyDefeated();
     }

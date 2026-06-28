@@ -9,17 +9,20 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b7fbe5d927b0d364f9fc23d2cb8601b1, type: 3}
-  m_Name: bh_SpreadShot
-  m_EditorClassIdentifier: 
-  id: atk
+  m_Script: {fileID: 11500000, guid: 2a6b8c0d4e1f37592b8d6a4c0e2f1937, type: 3}
+  m_Name: bh_Flower
+  m_EditorClassIdentifier:
+  id: bh_flower
   parryable: 0
-  telegraphSeconds: 0.4
-  recoverySeconds: 0.3
+  telegraphSeconds: 0.6
+  recoverySeconds: 0.4
   telegraphVfx: {fileID: 0}
-  damage: 10
-  projectileSpeed: 7
-  range: 20
+  damage: 9
+  projectileSpeed: 6
+  range: 22
   pierce: 0
-  projectileCount: 6
-  spreadAngle: 52
+  count: 18
+  rings: 3
+  timeBetweenRings: 0.14
+  spinPerRing: 10
+  startAngle: 0

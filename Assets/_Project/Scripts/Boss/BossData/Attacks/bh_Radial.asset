@@ -18,10 +18,10 @@ MonoBehaviour:
   recoverySeconds: 0.4
   telegraphVfx: {fileID: 0}
   damage: 10
-  projectileSpeed: 6
+  projectileSpeed: 5
   range: 20
   pierce: 0
-  count: 14
+  count: 16
   rings: 1
   timeBetweenRings: 0.25
   spinPerRing: 0

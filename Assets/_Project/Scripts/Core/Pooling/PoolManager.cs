@@ -111,6 +111,20 @@ public class PoolManager : MonoBehaviour
         if (instance != null) Despawn(instance.gameObject);
     }
 
+    // Devuelve al pool TODAS las instancias activas de 'prefab' (solo su pool). Lo usa el boss para
+    // limpiar sus ataques en vuelo (áreas/swooshes/balas) al morir/staggear, sin tocar otros pools
+    // (p. ej. el de la bala del jugador). Si no hay pool para ese prefab, no hace nada.
+    public static void ReleaseActive(GameObject prefab)
+    {
+        if (prefab == null || Instance == null) return;
+        if (Instance.pools.TryGetValue(prefab, out GameObjectPool pool)) pool.ReleaseAllActive();
+    }
+
+    public static void ReleaseActive(Component prefab)
+    {
+        if (prefab != null) ReleaseActive(prefab.gameObject);
+    }
+
     // --- internos ---
 
     private GameObjectPool GetOrCreatePool(object key, Func<GameObject> factory, int maxSize)

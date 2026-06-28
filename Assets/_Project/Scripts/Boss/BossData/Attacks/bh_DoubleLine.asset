@@ -9,17 +9,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b7fbe5d927b0d364f9fc23d2cb8601b1, type: 3}
-  m_Name: bh_SpreadShot
-  m_EditorClassIdentifier: 
-  id: atk
+  m_Script: {fileID: 11500000, guid: a1c3e5079b2d4f6181a3c5e709b2d4f6, type: 3}
+  m_Name: bh_DoubleLine
+  m_EditorClassIdentifier:
+  id: bh_doubleline
   parryable: 0
-  telegraphSeconds: 0.4
-  recoverySeconds: 0.3
+  telegraphSeconds: 0.5
+  recoverySeconds: 0.4
   telegraphVfx: {fileID: 0}
-  damage: 10
-  projectileSpeed: 7
-  range: 20
-  pierce: 0
-  projectileCount: 6
-  spreadAngle: 52
+  damage: 8
+  projectileSpeed: 9
+  range: 22
+  shots: 12
+  timeBetweenShots: 0.07
+  gapDist: 0.9

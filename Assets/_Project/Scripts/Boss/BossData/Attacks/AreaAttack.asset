@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: atk
   parryable: 1
-  telegraphSeconds: 0.4
+  telegraphSeconds: 0
   recoverySeconds: 0.3
   telegraphVfx: {fileID: 0}
   size: {x: 4, y: 4}
@@ -29,7 +29,7 @@ MonoBehaviour:
   fillSeconds: 0.4
   impactSeconds: 0.5
   damage: 10
-  alpha: 0.55
-  dodgeColor: {r: 1, g: 0.35, b: 0.1, a: 0.55}
-  parryColor: {r: 0.2, g: 0.8, b: 1, a: 0.55}
+  alpha: 0.7
+  dodgeColor: {r: 1, g: 0.28, b: 0.05, a: 1}
+  parryColor: {r: 0.1, g: 0.85, b: 1, a: 1}
   impactColor: {r: 1, g: 1, b: 1, a: 1}
