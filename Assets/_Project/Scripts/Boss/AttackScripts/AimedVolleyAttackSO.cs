@@ -17,6 +17,10 @@ public class AimedVolleyAttackSO : BossAttackSO
     [Tooltip("Tiempo entre disparos de la ráfaga, en segundos (la 'ventana' para parrear cada uno).")]
     public float timeBetweenShots = 0.5f;
 
+    [Tooltip("Si está marcado, ALTERNA bala parreable (cian) y no parreable (roja) en cada disparo de la " +
+             "ráfaga -> fuerza esquiva/parry/esquiva/parry. (Ignora 'parryable' para el color de cada bala.)")]
+    public bool alternateParry = false;
+
     public override IEnumerator Execute(BossContext ctx)
     {
         yield return Telegraph(ctx);
@@ -25,7 +29,8 @@ public class AimedVolleyAttackSO : BossAttackSO
         {
             Vector2 origin = ctx.MuzzlePosition(0);
             Vector2 dir = ctx.AimToPlayer(origin);   // reapunta en cada disparo
-            ctx.Spawn(origin, dir, projectileSpeed, range, false, damage, parryable);
+            bool shotParryable = alternateParry ? (i % 2 == 1) : parryable;   // empieza por esquiva (roja)
+            ctx.Spawn(origin, dir, projectileSpeed, range, false, damage, shotParryable);
 
             if (timeBetweenShots > 0f && i < shots - 1)
                 yield return new WaitForSeconds(timeBetweenShots);

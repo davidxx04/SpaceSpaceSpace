@@ -50,7 +50,10 @@ public class BossAttackDirector : MonoBehaviour
             float gap = Random.Range(phase.gapRange.x, phase.gapRange.y);
             if (gap > 0f) yield return new WaitForSeconds(gap);
 
-            bool doCombo = phase.useCombos && phase.combos != null && phase.combos.Length > 0;
+            bool canCombo = phase.useCombos && phase.combos != null && phase.combos.Length > 0;
+            bool canSingle = phase.singles != null && phase.singles.Length > 0;
+            // Con useCombos, si además hay singles, intercala combo/single según comboChance (1 = solo combos).
+            bool doCombo = canCombo && (!canSingle || Random.value <= phase.comboChance);
 
             if (doCombo) yield return RunCombo(NextCombo());
             else yield return RunAttack(NextSingle());

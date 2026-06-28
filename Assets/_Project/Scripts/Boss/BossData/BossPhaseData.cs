@@ -36,6 +36,11 @@ public class BossPhaseData : ScriptableObject
              "Shuffle/Random = variar el orden.")]
     public Selection comboSelection = Selection.Sequential;
 
+    [Range(0f, 1f)]
+    [Tooltip("Si useCombos y hay singles: probabilidad de lanzar un COMBO (vs un single suelto) en cada " +
+             "acción. 1 = solo combos; 0.5 = mitad combos / mitad singles intercalados.")]
+    public float comboChance = 1f;
+
     [Header("Agresividad")]
     [Tooltip("Pausa entre acciones, en segundos (rango aleatorio min/max). Menor = más agresivo.")]
     public Vector2 gapRange = new Vector2(2f, 3f);
