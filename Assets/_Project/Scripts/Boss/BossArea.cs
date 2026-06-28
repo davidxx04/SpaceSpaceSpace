@@ -38,7 +38,6 @@ public class BossArea : MonoBehaviour, IPoolable
     private float fillT;
     private Color currentColor = Color.red;
 
-    private static Sprite quadSprite;
     private static Material glowMaterial;
 
     private void Awake()
@@ -140,21 +139,10 @@ public class BossArea : MonoBehaviour, IPoolable
         var go = new GameObject(n);
         go.transform.SetParent(transform, false);
         var sr = go.AddComponent<SpriteRenderer>();
-        sr.sprite = GetQuadSprite();
+        sr.sprite = PrimitiveQuad.Unit;
         sr.sortingOrder = order;
         if (mat != null) sr.sharedMaterial = mat;
         return sr;
-    }
-
-    // Sprite cuadrado unitario (1u, pivote centrado) generado en código y cacheado static, como SpriteGlow.
-    private static Sprite GetQuadSprite()
-    {
-        if (quadSprite == null)
-        {
-            Texture2D tex = Texture2D.whiteTexture;
-            quadSprite = Sprite.Create(tex, new Rect(0f, 0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), tex.width);
-        }
-        return quadSprite;
     }
 
     // Material additive del glow (reusa el shader de SpriteGlow). Cacheado static -> compartido por todas

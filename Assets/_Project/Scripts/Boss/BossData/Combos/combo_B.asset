@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 00f11e3f1a73d1f49a544d89d66eaa50, type: 3}
+  m_Name: combo_B
+  m_EditorClassIdentifier:
+  id: combo_B_bullethell
+  type: 0
+  sequence:
+  - attack: {fileID: 11400000, guid: 0918a2b3c4d5e6f70819a2b3c4d5e6f7, type: 2}
+    delayAfter: 0.1
+  - attack: {fileID: 11400000, guid: 0e7e976c06b282f4ca103b386b9abd7a, type: 2}
+    delayAfter: 0.25
+  - attack: {fileID: 11400000, guid: c4d5e6f70819a2b3c4d5e6f708192a3b, type: 2}
+    delayAfter: 0.3
+  - attack: {fileID: 11400000, guid: 7d9bdcb38be474b49ae48fc91b53e7d2, type: 2}
+    delayAfter: 0.4

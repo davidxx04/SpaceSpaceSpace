@@ -1499,6 +1499,7 @@ GameObject:
   - component: {fileID: 1375374829}
   - component: {fileID: 1375374828}
   - component: {fileID: 1375374827}
+  - component: {fileID: 1375374832}
   m_Layer: 7
   m_Name: Boss
   m_TagString: Untagged
@@ -1586,8 +1587,10 @@ MonoBehaviour:
   bossProjectile: {fileID: 1121132523409968560, guid: d8d0758346e345843a0f5cf09ec2bb99, type: 3}
   parryableBossProjectile: {fileID: 1121132523409968560, guid: 3f88aba8a210744439189d185a3ad46f, type: 3}
   bossArea: {fileID: 2864012298551848800, guid: 64f6ef3b3b67f9049b2c314fd2e1d338, type: 3}
+  bossSwoosh: {fileID: 5600000000000000003, guid: 6f708192a3b4c5d6e7f809192a3b4c5d, type: 3}
   phases:
   - {fileID: 11400000, guid: dbe197a626f7a7b40be87c2748c43845, type: 2}
+  - {fileID: 11400000, guid: 4d5e6f708192a3b4c5d6e7f809192a3b, type: 2}
   introSeconds: 1.5
   staggerParryThreshold: 6
   staggerSeconds: 2.5
@@ -1606,6 +1609,58 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!212 &1375374832
+SpriteRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1375374826}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_Sprite: {fileID: 21300000, guid: c4a11db1ee4727947aa46d4a3dc4b01c, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 0
+  m_Size: {x: 1.28, y: 1.28}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
+  m_SpriteSortPoint: 0
 --- !u!1 &1451389727
 GameObject:
   m_ObjectHideFlags: 0
@@ -1877,7 +1932,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1628937444
 MonoBehaviour:
   m_ObjectHideFlags: 0

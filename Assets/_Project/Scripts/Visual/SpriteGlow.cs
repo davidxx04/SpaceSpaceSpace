@@ -30,7 +30,6 @@ public class SpriteGlow : MonoBehaviour
     [SerializeField] private float pulseAmount = 0.15f;
 
     private static Material glowMaterial;
-    private static Sprite quadSprite;
 
     private float baseAlpha;
 
@@ -105,7 +104,7 @@ public class SpriteGlow : MonoBehaviour
         go.transform.localPosition = Vector3.zero;
 
         var sr = go.AddComponent<SpriteRenderer>();
-        sr.sprite = GetQuadSprite();
+        sr.sprite = PrimitiveQuad.Unit;
         sr.sharedMaterial = GetGlowMaterial();
 
         // Se ordena respecto al sprite anfitrión si lo hay (si no, usa solo el offset).
@@ -129,17 +128,5 @@ public class SpriteGlow : MonoBehaviour
             if (shader != null) glowMaterial = new Material(shader) { name = "SpriteGlow (auto)" };
         }
         return glowMaterial;
-    }
-
-    private static Sprite GetQuadSprite()
-    {
-        if (quadSprite == null)
-        {
-            Texture2D tex = Texture2D.whiteTexture;
-            // Sprite de 1 unidad (pixelsPerUnit = ancho de la textura), pivote centrado. El shader usa
-            // el UV para la caída radial; la textura en sí no importa (es blanca).
-            quadSprite = Sprite.Create(tex, new Rect(0f, 0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), tex.width);
-        }
-        return quadSprite;
     }
 }

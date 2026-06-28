@@ -13,6 +13,7 @@ public class BossContext
     public Projectile ProjectilePrefab;  // bala NO parreable (su Hitbox debe apuntar a la capa Player)
     public Projectile ParryableProjectilePrefab;  // bala PARREABLE (otro prefab/sprite); opcional
     public BossArea AreaPrefab;          // prefab del área (zona telegrafiada por barra de relleno); opcional
+    public BossSwoosh SwooshPrefab;      // prefab del swoosh (barra que barre); opcional
     public BossMovement Movement;        // movimiento, por si un ataque quiere reposicionar
 
     // Dirección normalizada desde 'from' hacia el jugador (Vector2.up de fallback si no hay jugador).
@@ -67,5 +68,16 @@ public class BossContext
             return null;
         }
         return PoolManager.Spawn(AreaPrefab, pos, Quaternion.identity);
+    }
+
+    // Instancia un swoosh pooleado en 'pos'. Lo configura y dirige el SwooshAttackSO.
+    public BossSwoosh SpawnSwoosh(Vector2 pos)
+    {
+        if (SwooshPrefab == null)
+        {
+            Debug.LogWarning("[BossContext] No hay prefab de swoosh asignado; no se lanza el swoosh.");
+            return null;
+        }
+        return PoolManager.Spawn(SwooshPrefab, pos, Quaternion.identity);
     }
 }
