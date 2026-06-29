@@ -11,11 +11,11 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9d4f1b8c3a6e27051c9b4a7e8d0f6132, type: 3}
   m_Name: bh_Swoosh
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   id: bh_swoosh
   parryable: 0
-  telegraphSeconds: 0.5
-  recoverySeconds: 0.4
+  telegraphSeconds: 0.4
+  recoverySeconds: 0
   telegraphVfx: {fileID: 0}
   damage: 12
   width: 5

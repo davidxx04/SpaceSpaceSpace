@@ -17,22 +17,22 @@ public class AttackState : IPlayerState
 
     // Solo se puede cancelar el ataque en su tramo final (ventana de cancelación).
     public bool CanInterrupt =>
-        player.AttackData.duration <= 0f ||
-        elapsed >= player.AttackData.duration - player.AttackData.cancelWindow;
+        player.CurrentAttackData.duration <= 0f ||
+        elapsed >= player.CurrentAttackData.duration - player.CurrentAttackData.cancelWindow;
 
     public void Enter()
     {
         direction = player.AimDirection;   // dirección de disparo (fija al iniciar el ataque)
         elapsed = 0f;
         fired = false;
-        player.NextAttackTime = Time.time + player.AttackData.cooldown;
+        player.NextAttackTime = Time.time + player.CurrentAttackData.cooldown;
     }
 
     public void Tick() { }
 
     public void FixedTick()
     {
-        AttackData data = player.AttackData;
+        AttackData data = player.CurrentAttackData;
         elapsed += Time.fixedDeltaTime;
 
         // Movimiento parametrizable mientras disparas (0 = anclado, 1 = igual).
@@ -84,5 +84,8 @@ public class AttackState : IPlayerState
 
         // Recoil hacia atrás (opuesto al disparo).
         player.ApplyRecoil(-direction, data);
+
+        // Cobra la energía del arma resuelta (no hace nada si el disparo fue el normal).
+        player.NotifyAttackFired();
     }
 }

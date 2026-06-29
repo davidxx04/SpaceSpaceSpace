@@ -26,4 +26,4 @@ MonoBehaviour:
   timeBetweenRings: 0.1
   spinPerRing: 13
   startAngle: 0
-  alternateParry: 0
+  alternateParry: 1

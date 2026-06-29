@@ -11,11 +11,11 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5e1d3c7b9a2f48160d3b7c1e5a9f2648, type: 3}
   m_Name: util_RepositionEdge
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   id: util_reposition
   parryable: 0
-  telegraphSeconds: 0
-  recoverySeconds: 0
+  telegraphSeconds: 1.5
+  recoverySeconds: 0.7
   telegraphVfx: {fileID: 0}
   mode: 1
   margin: 2

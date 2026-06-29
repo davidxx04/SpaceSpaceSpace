@@ -136,7 +136,7 @@ GameObject:
   - component: {fileID: 145841086}
   - component: {fileID: 145841090}
   m_Layer: 5
-  m_Name: Canvas
+  m_Name: CanvasUI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -842,17 +842,17 @@ MonoBehaviour:
     prewarm: 100
     maxSize: 600
   - prefab: {fileID: 365785502987384549, guid: d8d0758346e345843a0f5cf09ec2bb99, type: 3}
-    prewarm: 100
+    prewarm: 5
     maxSize: 800
   - prefab: {fileID: 365785502987384549, guid: 3f88aba8a210744439189d185a3ad46f, type: 3}
     prewarm: 50
     maxSize: 800
   - prefab: {fileID: 8887790563231264781, guid: 64f6ef3b3b67f9049b2c314fd2e1d338, type: 3}
-    prewarm: 50
-    maxSize: 800
+    prewarm: 10
+    maxSize: 100
   - prefab: {fileID: 5600000000000000001, guid: 6f708192a3b4c5d6e7f809192a3b4c5d, type: 3}
-    prewarm: 50
-    maxSize: 800
+    prewarm: 10
+    maxSize: 100
 --- !u!4 &661115854
 Transform:
   m_ObjectHideFlags: 0
@@ -1306,7 +1306,7 @@ SceneRoots:
   m_Roots:
   - {fileID: 519420032}
   - {fileID: 619394802}
+  - {fileID: 573234844}
   - {fileID: 1252518684}
   - {fileID: 661115854}
   - {fileID: 145841089}
-  - {fileID: 573234844}

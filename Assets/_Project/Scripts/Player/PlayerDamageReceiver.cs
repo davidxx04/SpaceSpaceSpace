@@ -5,10 +5,11 @@ using UnityEngine;
 // aplicarlos, en este orden:
 //   1) Parry      -> si IsParrying y el ataque es parryable: se anula y se avisa al atacante.
 //   2) I-frames   -> si IsInvulnerable (rol): se ignora.
-//   3) Daño normal-> (futuro) reenviar a un Health del jugador.
+//   3) Daño normal-> se aplica al Health del jugador (su muerte la escucha el MatchController).
 public class PlayerDamageReceiver : MonoBehaviour, IDamageable
 {
     [SerializeField] private PlayerController player;
+    [SerializeField] private Health health;
 
     [Tooltip("Segundos de invulnerabilidad de cortesía tras recibir un golpe real (i-frames). Evita encadenar golpes. 0 = sin gracia.")]
     [SerializeField] private float hitInvulnerabilitySeconds = 1f;
@@ -23,6 +24,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     private void Awake()
     {
         if (player == null) player = GetComponent<PlayerController>();
+        if (health == null) health = GetComponent<Health>();
     }
 
     public void TakeDamage(DamageInfo info)
@@ -50,10 +52,11 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
             return;
         }
 
-        // 3) Daño normal (de momento el jugador aún no tiene Health).
+        // 3) Daño normal: se aplica al Health del jugador.
         // Gracia: concede i-frames ANTES de avisar, para que los oyentes ya vean IsInvulnerable activo.
         player.GrantInvulnerability(hitInvulnerabilitySeconds);
-        if (logForDebug) Debug.Log($"[Player] te habría dado: {info.amount}");
-        Hit?.Invoke(info);
+        if (logForDebug) Debug.Log($"[Player] golpe: {info.amount}");
+        health?.TakeDamage(info);   // la muerte (Health.Died) la escucha el MatchController
+        Hit?.Invoke(info);          // señal de "me han dado" para el feedback (PlayerHurtFx)
     }
 }

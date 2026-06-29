@@ -14,7 +14,14 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private AfterimageEmitter afterimage; // emisor de estelas del dash (opcional)
     [SerializeField] private RollData rollData;
     [SerializeField] private AttackData attackData;
+    [Tooltip("Ataque especial (gasta energía). Sale por el MISMO botón de ataque cuando hay energía suficiente.")]
+    [SerializeField] private AttackData specialAttackData;
+    [Tooltip("Ataque 'nuke' a barra de energía LLENA (opcional). Vacío = nunca se dispara (queda la estructura lista).")]
+    [SerializeField] private AttackData nukeAttackData;
     [SerializeField] private ParryData parryData;
+
+    [Header("Recursos")]
+    [SerializeField] private EnergyTank energy;
 
     [Header("Movimiento")]
     [Tooltip("Velocidad de caminado (lenta, estilo arcade).")]
@@ -28,6 +35,16 @@ public class PlayerController : MonoBehaviour
     public AttackData AttackData => attackData;
     public ParryData ParryData => parryData;
     public float WalkSpeed => walkSpeed;
+
+    // Arma resuelta para el disparo en curso (normal / especial / nuke). La lee AttackState en lugar
+    // de AttackData fijo, para que cooldown/cadencia/patrón sigan al arma que de verdad se dispara.
+    // La elige TryStartAttack según la energía; por defecto es el ataque normal.
+    public AttackData CurrentAttackData { get; private set; }
+
+    // Coste de energía del disparo en curso (resuelto junto con CurrentAttackData). Lo consume
+    // AttackState al disparar (NotifyAttackFired), no al entrar al estado.
+    private float pendingEnergyCost;
+    private bool pendingConsumeAll;   // true si el disparo en curso es el "nuke" (vacía la barra entera)
 
     // Última dirección de apuntado (normalizada). La usan el rol y el indicador.
     // Por defecto "arriba" para que un rol sin haber movido nunca quede a cero.
@@ -105,6 +122,8 @@ public class PlayerController : MonoBehaviour
         if (rb == null) rb = GetComponent<Rigidbody2D>();
         if (afterimage == null) afterimage = GetComponent<AfterimageEmitter>();
 
+        CurrentAttackData = attackData;   // arma por defecto hasta que TryStartAttack resuelva otra
+
         Input = new PlayerInputReader();
         StateMachine = new PlayerStateMachine();
 
@@ -157,8 +176,44 @@ public class PlayerController : MonoBehaviour
     {
         if ((StateMachine.Current?.CanInterrupt ?? false) && CanAttack)
         {
+            ResolveAttack();
             StateMachine.ChangeState(AttackState);
         }
+    }
+
+    // Elige qué arma sale por el botón de ataque según la energía disponible (mismo botón para
+    // normal/especial/nuke, porque la cabina solo tiene 3 botones). Guarda el coste para cobrarlo
+    // en el disparo real (NotifyAttackFired), no aquí.
+    private void ResolveAttack()
+    {
+        pendingEnergyCost = 0f;
+        pendingConsumeAll = false;
+
+        if (nukeAttackData != null && energy != null && energy.IsFull)
+        {
+            CurrentAttackData = nukeAttackData;
+            pendingConsumeAll = true;            // el nuke vacía la barra entera
+        }
+        else if (specialAttackData != null && energy != null && energy.CanFireSpecial)
+        {
+            CurrentAttackData = specialAttackData;
+            pendingEnergyCost = energy.SpecialCost;
+        }
+        else
+        {
+            CurrentAttackData = attackData;
+        }
+    }
+
+    // Lo llama AttackState cuando el disparo SALE de verdad: cobra la energía del arma resuelta.
+    public void NotifyAttackFired()
+    {
+        if (energy == null) return;
+        if (pendingConsumeAll) energy.ConsumeAll();
+        else if (pendingEnergyCost > 0f) energy.Spend(pendingEnergyCost);
+
+        pendingEnergyCost = 0f;
+        pendingConsumeAll = false;
     }
 
     private void OnParryInput()
