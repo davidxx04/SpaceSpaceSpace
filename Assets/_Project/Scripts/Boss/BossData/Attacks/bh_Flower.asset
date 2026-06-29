@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2a6b8c0d4e1f37592b8d6a4c0e2f1937, type: 3}
   m_Name: bh_Flower
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   id: bh_flower
   parryable: 0
   telegraphSeconds: 0.6
@@ -22,7 +22,7 @@ MonoBehaviour:
   range: 22
   pierce: 0
   count: 18
-  rings: 3
-  timeBetweenRings: 0.14
-  spinPerRing: 10
-  startAngle: 0
+  rings: 6
+  timeBetweenRings: 0.3
+  spinPerRing: 25
+  startAngle: 15

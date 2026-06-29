@@ -26,16 +26,25 @@ public class RadialBurstAttackSO : BossAttackSO
     [Tooltip("Offset angular inicial del primer anillo, en grados.")]
     public float startAngle = 0f;
 
+    [Tooltip("Si está marcado, reparte las balas 2 no parreables (rojas) : 1 parreable (cian) -> " +
+             "NP, NP, P, NP, NP, P... (Ignora 'parryable' para el color de cada bala.)")]
+    public bool alternateParry = false;
+
     public override IEnumerator Execute(BossContext ctx)
     {
         yield return Telegraph(ctx);
 
+        int shot = 0;   // índice GLOBAL de bala (continuo entre anillos) para la cadencia 2:1
         for (int r = 0; r < rings; r++)
         {
             Vector2 origin = ctx.MuzzlePosition(0);
             float startDeg = startAngle + spinPerRing * r;
             foreach (Vector2 dir in BossAttackUtils.Radial(count, startDeg))
-                ctx.Spawn(origin, dir, projectileSpeed, range, pierce, damage, parryable);
+            {
+                bool shotParryable = alternateParry ? (shot % 3 == 2) : parryable;   // 1 parreable de cada 3
+                ctx.Spawn(origin, dir, projectileSpeed, range, pierce, damage, shotParryable);
+                shot++;
+            }
 
             if (timeBetweenRings > 0f && r < rings - 1)
                 yield return new WaitForSeconds(timeBetweenRings);

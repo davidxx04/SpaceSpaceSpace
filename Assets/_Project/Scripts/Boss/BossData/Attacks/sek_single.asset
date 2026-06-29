@@ -9,21 +9,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2a6b8c0d4e1f37592b8d6a4c0e2f1937, type: 3}
-  m_Name: bh_Radial
+  m_Script: {fileID: 11500000, guid: e2b83469f1b65374fb682bf1b42b6198, type: 3}
+  m_Name: sek_single
   m_EditorClassIdentifier:
-  id: bh_radial
-  parryable: 0
-  telegraphSeconds: 0.7
-  recoverySeconds: 0.4
+  id: sek_single
+  parryable: 1
+  telegraphSeconds: 0.35
+  recoverySeconds: 0.1
   telegraphVfx: {fileID: 0}
   damage: 10
-  projectileSpeed: 5
+  projectileSpeed: 9
   range: 20
-  pierce: 0
-  count: 16
-  rings: 1
-  timeBetweenRings: 0.25
-  spinPerRing: 0
-  startAngle: 0
+  shots: 1
+  timeBetweenShots: 0
   alternateParry: 0

@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2a6b8c0d4e1f37592b8d6a4c0e2f1937, type: 3}
   m_Name: bh_Spiral
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   id: bh_spiral
   parryable: 0
   telegraphSeconds: 0.5
@@ -23,6 +23,7 @@ MonoBehaviour:
   pierce: 0
   count: 5
   rings: 14
-  timeBetweenRings: 0.06
+  timeBetweenRings: 0.1
   spinPerRing: 13
   startAngle: 0
+  alternateParry: 0

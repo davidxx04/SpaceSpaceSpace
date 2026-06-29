@@ -10,14 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 00f11e3f1a73d1f49a544d89d66eaa50, type: 3}
-  m_Name: combo_E
-  m_EditorClassIdentifier:
-  id: combo_E_spiral
-  type: 2
+  m_Name: combo_F
+  m_EditorClassIdentifier: 
+  id: combo_F_quadswoosh
+  type: 0
   sequence:
-  - attack: {fileID: 11400000, guid: e507293a0b4d6f8295e7091a3b5d7f92, type: 2}
-    delayAfter: 0.3
-  - attack: {fileID: 11400000, guid: 1a3b5c7d9e0f2143658799aabbccddee, type: 2}
-    delayAfter: 0.3
+  - attack: {fileID: 11400000, guid: d5e6f708192a3b4c5d6e7f80910a2b3c, type: 2}
+    delayAfter: 0
+  - attack: {fileID: 11400000, guid: d5e6f708192a3b4c5d6e7f80910a2b3c, type: 2}
+    delayAfter: 0
+  - attack: {fileID: 11400000, guid: d5e6f708192a3b4c5d6e7f80910a2b3c, type: 2}
+    delayAfter: 0
   - attack: {fileID: 11400000, guid: d5e6f708192a3b4c5d6e7f80910a2b3c, type: 2}
     delayAfter: 0.3

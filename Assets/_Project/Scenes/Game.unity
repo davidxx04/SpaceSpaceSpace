@@ -1593,6 +1593,7 @@ MonoBehaviour:
   phases:
   - {fileID: 11400000, guid: dbe197a626f7a7b40be87c2748c43845, type: 2}
   - {fileID: 11400000, guid: 4d5e6f708192a3b4c5d6e7f809192a3b, type: 2}
+  - {fileID: 11400000, guid: a2c6e8f01435791bef68ace024579136, type: 2}
   introSeconds: 1.5
   staggerParryThreshold: 6
   staggerSeconds: 2.5
@@ -1676,6 +1677,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   data: {fileID: 0}
+  bodyRenderer: {fileID: 0}
+  edgeMargin: {x: 0, y: 0}
 --- !u!50 &1375374834
 Rigidbody2D:
   serializedVersion: 4
@@ -2111,7 +2114,7 @@ MonoBehaviour:
   rollData: {fileID: 11400000, guid: 35bbfe4a9471f534ebeba3de830dbc88, type: 2}
   attackData: {fileID: 11400000, guid: 899c65cd434589148bf025af80972cf7, type: 2}
   parryData: {fileID: 11400000, guid: 39fa8ed9084b2774998f1f101ea54612, type: 2}
-  walkSpeed: 1.92
+  walkSpeed: 2.2
 --- !u!50 &1698066385
 Rigidbody2D:
   serializedVersion: 4
