@@ -2871,13 +2871,13 @@ MonoBehaviour:
   rb: {fileID: 0}
   aimIndicator: {fileID: 0}
   shipSprite: {fileID: 186109066}
-  afterimage: {fileID: 0}
+  afterimage: {fileID: 1698066390}
   rollData: {fileID: 11400000, guid: 35bbfe4a9471f534ebeba3de830dbc88, type: 2}
   attackData: {fileID: 11400000, guid: 899c65cd434589148bf025af80972cf7, type: 2}
   specialAttackData: {fileID: 11400000, guid: 2877d639a1618bf4dad58a1bafb5c47e, type: 2}
-  nukeAttackData: {fileID: 0}
+  nukeAttackData: {fileID: 11400000, guid: 2877d639a1618bf4dad58a1bafb5c47e, type: 2}
   parryData: {fileID: 11400000, guid: 39fa8ed9084b2774998f1f101ea54612, type: 2}
-  energy: {fileID: 0}
+  energy: {fileID: 1698066393}
   walkSpeed: 2.2
 --- !u!50 &1698066385
 Rigidbody2D:
