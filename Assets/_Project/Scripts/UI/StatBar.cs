@@ -19,13 +19,19 @@ public class StatBar : MonoBehaviour
 
     private float target;     // fillAmount objetivo (0..1)
     private float displayed;  // fillAmount mostrado actualmente (0..1)
+    private bool initialized; // ¿ya se ha fijado el primer valor? (el primero hace snap, no anima)
 
     // Fija el valor a representar. 'max' <= 0 se trata como barra vacía (evita dividir por cero).
     public void SetValue(float current, float max)
     {
         target = max > 0f ? Mathf.Clamp01(current / max) : 0f;
-        if (!smooth)
+
+        // El primer valor SIEMPRE se aplica de golpe (snap). Si no, una barra que arranca en su
+        // valor por defecto (p.ej. energía a 0 = displayed 0) nunca escribiría el fillAmount y se
+        // quedaría con el que tuviera la Image autorizada en escena (que estaba a 1 = llena).
+        if (!smooth || !initialized)
         {
+            initialized = true;
             displayed = target;
             Apply();
         }

@@ -232,6 +232,18 @@ public class PlayerController : MonoBehaviour
         if (StateMachine.Current == ParryState) ParryState.RegisterSuccess();
     }
 
+    // Lo llama PlayerDamageReceiver al recibir daño REAL. Si el arma en curso lo permite
+    // (interruptOnHit), cancela el disparo (vuelve a locomoción) para que no puedas spamear
+    // disparos estáticos encajando golpes. Consume el mantenido para que el auto-fire no reanude solo.
+    public void NotifyDamaged()
+    {
+        if (StateMachine.Current == AttackState && CurrentAttackData != null && CurrentAttackData.interruptOnHit)
+        {
+            StateMachine.ChangeState(LocomotionState);
+            attackHoldConsumed = true;
+        }
+    }
+
     private void Update()
     {
         UpdateAim();

@@ -28,6 +28,10 @@ public class AttackData : ScriptableObject
     [Tooltip("Multiplica la velocidad de caminado mientras disparas. 0 = anclado, 1 = igual.")]
     public float moveMultiplier = 1f;
 
+    [Tooltip("Si está marcado, recibir daño CANCELA el disparo en curso (evita pasarte el juego " +
+             "disparando estático mientras encajas golpes). Desmárcalo para comparar si se siente mal.")]
+    public bool interruptOnHit = true;
+
     [Header("Proyectil")]
     public Projectile projectilePrefab;
 

@@ -38,9 +38,8 @@ public class GameObjectPool
     {
         for (int i = 0; i < count && Total < maxSize; i++)
         {
-            GameObject go = Create();
+            GameObject go = Create();   // Create ya la devuelve inactiva
             if (go == null) break;
-            go.SetActive(false);
             idle.Push(go);
         }
     }
@@ -115,6 +114,13 @@ public class GameObjectPool
         po.SetPool(this);
 
         if (parent != null) go.transform.SetParent(parent, false);
+
+        // Nace INACTIVA siempre: así toda instancia (prewarm / on-demand / reciclada) pasa por el
+        // mismo SetActive(true) en Get tras fijar su pose. Ese enable limpio hace que el Rigidbody2D
+        // resincronice su pose base de interpolación desde el transform recién colocado; si no, las
+        // balas creadas bajo demanda (Instantiate las deja activas) salían interpolando desde el
+        // origen/identidad → primeras balas mal colocadas/rotadas al arrancar sin prewarm.
+        go.SetActive(false);
         return go;
     }
 

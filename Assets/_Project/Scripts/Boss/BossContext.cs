@@ -52,7 +52,9 @@ public class BossContext
             return null;
         }
 
-        Projectile proj = PoolManager.Spawn(prefab, pos, Quaternion.identity);
+        // Nace ya orientada hacia 'dir' (no identidad) para evitar el frame de rotación torcida.
+        float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+        Projectile proj = PoolManager.Spawn(prefab, pos, Quaternion.Euler(0f, 0f, angle));
         if (proj == null) return null;
         var info = new DamageInfo(damage, Boss != null ? Boss.gameObject : null, dir) { parryable = parryable };
         proj.Launch(dir, speed, range, pierce, info);

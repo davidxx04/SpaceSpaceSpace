@@ -34,6 +34,13 @@ public class BossMovement : MonoBehaviour
     private Vector2? moveToTarget;   // si tiene valor, manda sobre 'behavior' hasta llegar
     private float strafeAngle;       // ángulo actual de la órbita (grados)
 
+    // --- Naturalidad (de-glue): el boss persigue un ANCLA retardada del jugador, no su posición real ---
+    private Vector2 playerAnchor;            // posición del jugador 'con lag' (la que de verdad persigue)
+    private Vector2 anchorVel;               // velocidad interna del SmoothDamp del ancla
+    private Vector2 moveVel;                 // velocidad interna del SmoothDamp del desplazamiento (peso/inercia)
+    private float driftSign = 1f;            // sentido actual de la deriva tangencial
+    private float nextDriftFlipTime;         // próximo instante en que invierte la deriva
+
     // --- Embestida (movimiento-como-ataque) ---
     private bool charging;
     private Vector2 chargeDir;
@@ -49,7 +56,13 @@ public class BossMovement : MonoBehaviour
     }
 
     // --- API que usan el controller, los estados y los ataques ---
-    public void SetPlayer(Transform p) => player = p;
+    public void SetPlayer(Transform p)
+    {
+        player = p;
+        // El ancla arranca sobre el jugador para no pegar un tirón en el primer frame.
+        playerAnchor = p != null ? (Vector2)p.position : rb.position;
+        anchorVel = Vector2.zero;
+    }
     public void SetData(BossMovementData d) { if (d != null) data = d; }
     public void SetBehavior(BossMoveBehavior b) { behavior = b; moveToTarget = null; }
 
@@ -100,8 +113,15 @@ public class BossMovement : MonoBehaviour
         if (charging) { TickCharge(); return; }
         if (data == null) return;
 
+        float dt = Time.fixedDeltaTime;
         Vector2 pos = rb.position;
         Vector2 target = pos;
+
+        // ANCLA RETARDADA: el boss persigue una versión 'con lag' de tu posición, no la real. Esto
+        // es lo que rompe el espejo 1:1 (la sensación de que mueves al boss). reactionLag=0 => al día.
+        if (player != null)
+            playerAnchor = Vector2.SmoothDamp(playerAnchor, player.position, ref anchorVel,
+                                              data.reactionLag, Mathf.Infinity, dt);
 
         if (moveToTarget.HasValue)
         {
@@ -119,27 +139,50 @@ public class BossMovement : MonoBehaviour
                 case BossMoveBehavior.Strafe:
                     if (player != null)
                     {
-                        strafeAngle += data.strafeAngularSpeed * Time.fixedDeltaTime;
+                        strafeAngle += data.strafeAngularSpeed * dt;
                         float rad = strafeAngle * Mathf.Deg2Rad;
-                        target = (Vector2)player.position + new Vector2(Mathf.Cos(rad), Mathf.Sin(rad)) * data.strafeRadius;
+                        target = playerAnchor + new Vector2(Mathf.Cos(rad), Mathf.Sin(rad)) * data.strafeRadius;
                     }
                     break;
 
                 case BossMoveBehavior.MaintainDistance:
-                    if (player != null)
-                    {
-                        Vector2 fromPlayer = pos - (Vector2)player.position;
-                        if (fromPlayer.sqrMagnitude < 0.0001f) fromPlayer = Vector2.up;
-                        target = (Vector2)player.position + fromPlayer.normalized * data.preferredDistance;
-                    }
+                    if (player != null) target = MaintainDistanceTarget(pos, dt);
                     break;
             }
         }
 
         target = ClampToArena(target);
 
-        Vector2 next = Vector2.MoveTowards(pos, target, data.moveSpeed * Time.fixedDeltaTime);
-        rb.MovePosition(next);
+        // INTEGRADOR CON PESO: SmoothDamp (críticamente amortiguado, sin overshoot) en vez de
+        // velocidad constante → arranques y frenadas suaves. moveSpeed actúa como tope de velocidad.
+        Vector2 next = Vector2.SmoothDamp(pos, target, ref moveVel, data.moveSmoothTime, data.moveSpeed, dt);
+        rb.MovePosition(ClampToArena(next));
+    }
+
+    // MaintainDistance en coordenadas polares alrededor del ANCLA retardada: banda muerta (no corrige
+    // dentro de ±tolerancia), respiración (la distancia deseada oscila) y deriva tangencial (orbita
+    // lenta que invierte el sentido cada pocos segundos) → diagonal viva en vez de radial-espejo.
+    private Vector2 MaintainDistanceTarget(Vector2 pos, float dt)
+    {
+        Vector2 fromAnchor = pos - playerAnchor;
+        float dist = fromAnchor.magnitude;
+        if (dist < 0.0001f) { fromAnchor = Vector2.up; dist = data.preferredDistance; }
+        float angle = Mathf.Atan2(fromAnchor.y, fromAnchor.x);
+
+        // Flip ocasional del sentido de la deriva (menos mecánico que orbitar siempre igual).
+        if (Time.time >= nextDriftFlipTime)
+        {
+            driftSign = Random.value < 0.5f ? 1f : -1f;
+            nextDriftFlipTime = Time.time + Random.Range(data.driftFlipInterval.x, data.driftFlipInterval.y);
+        }
+        angle += data.driftAngularSpeed * driftSign * Mathf.Deg2Rad * dt;
+
+        // Respiración: la distancia deseada oscila → a veces se acerca, a veces se aleja.
+        float desired = data.preferredDistance + Mathf.Sin(Time.time * data.breatheSpeed) * data.breatheAmplitude;
+        // Banda muerta: dentro de [desired±tol] el Clamp devuelve dist (no corrige); fuera, trae al borde.
+        float radius = Mathf.Clamp(dist, desired - data.distanceTolerance, desired + data.distanceTolerance);
+
+        return playerAnchor + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
     }
 
     // Clampa el CENTRO del boss dejando un margen = medio-sprite (+ extra) hacia dentro, para que el

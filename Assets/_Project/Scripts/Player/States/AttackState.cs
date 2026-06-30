@@ -70,7 +70,8 @@ public class AttackState : IPlayerState
                 float rad = angle * Mathf.Deg2Rad;
                 Vector2 dir = new Vector2(Mathf.Cos(rad), Mathf.Sin(rad));
 
-                Projectile proj = PoolManager.Spawn(data.projectilePrefab, spawnPos, Quaternion.identity);
+                // Nace ya orientada (no identidad) para que no haya ni un frame de interpolación torcida.
+                Projectile proj = PoolManager.Spawn(data.projectilePrefab, spawnPos, Quaternion.Euler(0f, 0f, angle));
                 if (proj == null) continue;
                 var info = new DamageInfo(data.damage, player.gameObject, dir);   // parryable=false (bala del jugador)
                 proj.Launch(dir, data.projectileSpeed, data.range, data.pierce, info);

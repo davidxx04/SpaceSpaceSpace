@@ -842,7 +842,7 @@ MonoBehaviour:
     prewarm: 100
     maxSize: 600
   - prefab: {fileID: 365785502987384549, guid: d8d0758346e345843a0f5cf09ec2bb99, type: 3}
-    prewarm: 5
+    prewarm: 100
     maxSize: 800
   - prefab: {fileID: 365785502987384549, guid: 3f88aba8a210744439189d185a3ad46f, type: 3}
     prewarm: 50

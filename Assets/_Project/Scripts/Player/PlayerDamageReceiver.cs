@@ -58,5 +58,6 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         if (logForDebug) Debug.Log($"[Player] golpe: {info.amount}");
         health?.TakeDamage(info);   // la muerte (Health.Died) la escucha el MatchController
         Hit?.Invoke(info);          // señal de "me han dado" para el feedback (PlayerHurtFx)
+        player.NotifyDamaged();     // cancela el disparo en curso si el arma tiene interruptOnHit
     }
 }

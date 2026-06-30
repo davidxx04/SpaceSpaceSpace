@@ -9,48 +9,87 @@ using UnityEngine.UI;
 // Herramienta de editor (NO entra en la build: vive en una carpeta "Editor") que monta y CABLEA el
 // HUD de un clic, para no tener que pelearse con las "cajas" (RectTransform) ni arrastrar refs a mano.
 //
-// Estética: barras pixel-art FINAS "pro". Genera sus sprites por código (texturas pequeñas con point
-// filtering) y los guarda como assets reales en Art/UI/, así el look queda "ligeramente pixelado"
-// SOLO en la UI (no toca cámara ni sprites del juego). Cada barra son hasta 4 capas:
-//   Bg (canal hundido) + Fill (relleno metálico, Image Filled) + Ticks (segmentos angulares,
-//   Image Tiled) + Frame (bisel 9-slice por encima, que tapa los bordes del relleno).
+// VERSIONADO POR ESTILO: el mismo builder genera distintas "versiones" del HUD (HudStyle). Cada una
+// es un menú propio bajo  SpaceSpaceSpace/HUD/  y escribe sus sprites en su subcarpeta Art/UI/<Id>/,
+// así puedes alternar/comparar sin que una pise a otra:
+//   - Pixel Thin  : barras pixel finas metálicas + segmentos + marco biselado simple (sin glow).
+//   - Neon Caustic: igual + marco ornamentado (acento/brackets) + shader de cáusticas en el relleno.
+//
+// Cada barra son hasta 4 capas: Bg (canal hundido) + Fill (relleno metálico, Image Filled) +
+// Ticks (segmentos angulares, Image Tiled) + Frame (bisel 9-slice por encima). Los sprites se generan
+// por código (point filtering) → look "ligeramente pixelado" SOLO en la UI (no toca cámara ni juego).
 //
 // IDEMPOTENTE y AUTO-SANADOR: reutiliza los GameObjects existentes (HUD_PlayerHP / HUD_Energy /
 // HUD_BossHP / HUD_Timer) y, al reconstruir cada barra, BORRA cualquier capa que no sea de la lista
-// conocida (limpia restos de versiones antiguas como BarBackground/BarFill, que se quedaban encima
-// tapando las barras nuevas). Asegura/cablea los sistemas que el HUD necesita (Health y EnergyTank
-// del player, refs del MatchController).
+// conocida (limpia restos de versiones antiguas como BarBackground/BarFill). Asegura/cablea los
+// sistemas que el HUD necesita (Health y EnergyTank del player, refs del MatchController).
 //
-// Uso: menú  SpaceSpaceSpace > Build HUD  (con la escena Game abierta). Luego Ctrl+S.
+// Uso: menú  SpaceSpaceSpace/HUD/<versión>  (con la escena Game abierta). Luego Ctrl+S.
 public static class HudBuilder
 {
-    private const string MenuPath = "SpaceSpaceSpace/Build HUD";
+    // ===================== Estilos (versiones) =====================
 
-    // ---- Tuning (todo ajustable; re-ejecuta la herramienta para reaplicar) ----
+    private class HudStyle
+    {
+        public string Id;                                   // subcarpeta de assets en Art/UI/<Id>/
+        public int FramePlayerSize, FramePlayerBorder;      // marco del player (textura + borde 9-slice)
+        public int FrameBossSize, FrameBossBorder;          // marco del boss (más grueso)
+        public bool OrnateFrame;                            // línea de acento interior + brackets de esquina
+        public bool UseGlow;                                // material de cáusticas en el relleno
+        public Vector2 HpPos, HpSize, EnPos, EnSize, BossPos, BossSize;
+    }
+
+    // Versión "anterior" buena: finas, marco simple, sin glow, pequeñas. (Default recomendada.)
+    private static readonly HudStyle PixelThin = new HudStyle
+    {
+        Id = "PixelThin",
+        FramePlayerSize = 12, FramePlayerBorder = 2,
+        FrameBossSize = 16, FrameBossBorder = 3,
+        OrnateFrame = false, UseGlow = false,
+        HpPos = new Vector2(16f, -14f), HpSize = new Vector2(160f, 13f),
+        EnPos = new Vector2(16f, -33f), EnSize = new Vector2(138f, 10f),
+        BossPos = new Vector2(0f, 30f), BossSize = new Vector2(360f, 13f),
+    };
+
+    // Versión experimental: marco ornamentado + glow de cáusticas + algo más grandes.
+    private static readonly HudStyle NeonCaustic = new HudStyle
+    {
+        Id = "NeonCaustic",
+        FramePlayerSize = 14, FramePlayerBorder = 3,
+        FrameBossSize = 18, FrameBossBorder = 4,
+        OrnateFrame = true, UseGlow = true,
+        HpPos = new Vector2(16f, -14f), HpSize = new Vector2(168f, 16f),
+        EnPos = new Vector2(16f, -36f), EnSize = new Vector2(146f, 13f),
+        BossPos = new Vector2(0f, 30f), BossSize = new Vector2(380f, 18f),
+    };
+
+    [MenuItem("SpaceSpaceSpace/HUD/Build Pixel Thin")]
+    public static void BuildPixelThin() => Build(PixelThin);
+
+    [MenuItem("SpaceSpaceSpace/HUD/Build Neon Caustic")]
+    public static void BuildNeonCaustic() => Build(NeonCaustic);
+
+    // ===================== Tuning compartido =====================
+
     // Pixelado: PPU del sprite. El Canvas usa 100 px/unidad de referencia, así que cada píxel del
     // sprite ocupa ~ (100 / PixelPpu) px en pantalla. 64 => pixelado fino. Baja = más chunky.
     private const float PixelPpu = 64f;
-
-    private const int FrameTexSize = 12;        // marco del player (fino)
-    private const int FrameBorder = 2;          // grosor 9-slice del marco del player
-    private const int BossFrameTexSize = 16;    // marco del boss (más grueso, tipo ref.2)
-    private const int BossFrameBorder = 3;
-
     private const int FillTexW = 4, FillTexH = 16;
-
     private const bool AddTicks = true;         // capa de segmentos angulares
     private const int TickTexSize = 8;          // tile de la muesca diagonal
     private const float TickPpuMult = 1f;       // densidad de los segmentos (mayor = más juntos)
 
-    // Paleta del marco del player (azulada, con profundidad).
+    // Paleta del marco del player (azulada). 'Accent' = línea interior + brackets (solo si OrnateFrame).
     private static readonly Color Outline = new Color(0.05f, 0.06f, 0.08f, 1f);
     private static readonly Color FrameLight = new Color(0.42f, 0.47f, 0.58f, 1f);
     private static readonly Color FrameDark = new Color(0.16f, 0.18f, 0.24f, 1f);
+    private static readonly Color FrameAccent = new Color(0.55f, 0.85f, 1f, 1f);   // cian-blanco
 
-    // Paleta del marco del boss (más oscuro y pesado).
+    // Paleta del marco del boss (más oscuro y pesado, acento cálido).
     private static readonly Color BossOutline = new Color(0.02f, 0.02f, 0.03f, 1f);
     private static readonly Color BossFrameLight = new Color(0.28f, 0.30f, 0.36f, 1f);
     private static readonly Color BossFrameDark = new Color(0.09f, 0.10f, 0.14f, 1f);
+    private static readonly Color BossFrameAccent = new Color(1f, 0.55f, 0.25f, 1f); // ámbar
 
     private static readonly Color BgEmpty = new Color(0.07f, 0.08f, 0.11f, 0.94f);
     private static readonly Color TickColor = new Color(0f, 0f, 0f, 0.34f);  // muesca semitransparente
@@ -59,22 +98,21 @@ public static class HudBuilder
     private static readonly Color EnergyColor = new Color(0.28f, 0.78f, 1f, 1f);
     private static readonly Color BossColor = new Color(0.95f, 0.45f, 0.14f, 1f);
 
-    private const string ArtDir = "Assets/_Project/Art/UI";
+    private const string ArtRoot = "Assets/_Project/Art/UI";
     private const string FontDir = "Assets/_Project/Art/Fonts";
-    private const string FramePath = ArtDir + "/hud_frame.png";
-    private const string BossFramePath = ArtDir + "/hud_frame_boss.png";
-    private const string FillPath = ArtDir + "/hud_fill.png";
-    private const string TicksPath = ArtDir + "/hud_ticks.png";
 
+    // Resueltos por estilo en EnsureAssets (rutas dentro de Art/UI/<Id>/).
     private static Sprite frameSprite, bossFrameSprite, fillSprite, ticksSprite;
+    private static Material glowMat;   // material del shader de cáusticas (null si el estilo no usa glow)
 
-    [MenuItem(MenuPath)]
-    public static void Build()
+    // ===================== Build =====================
+
+    private static void Build(HudStyle style)
     {
         var player = Object.FindObjectOfType<PlayerController>();
         if (player == null) { Debug.LogError("[HUD] No hay PlayerController en la escena. Abre la escena Game."); return; }
 
-        EnsureSprites();
+        EnsureAssets(style);
 
         var boss = Object.FindObjectOfType<BossController>();
         var timer = Object.FindObjectOfType<MatchTimer>();
@@ -105,21 +143,18 @@ public static class HudBuilder
 
         Canvas canvas = FindHudCanvas();
 
-        // --- Barras (pequeñas y finas) ---
-        StatBar hpBar = BuildBar("HUD_PlayerHP", canvas, new Vector2(0f, 1f),
-                                 new Vector2(16f, -14f), new Vector2(160f, 13f), HpColor, frameSprite);
+        // --- Barras ---
+        StatBar hpBar = BuildBar("HUD_PlayerHP", canvas, new Vector2(0f, 1f), style.HpPos, style.HpSize, HpColor, frameSprite);
         var hpBinder = Ensure<HealthBarBinder>(hpBar.gameObject);
         SetRef(hpBinder, "health", playerHealth);
         SetRef(hpBinder, "bar", hpBar);
 
-        StatBar enBar = BuildBar("HUD_Energy", canvas, new Vector2(0f, 1f),
-                                 new Vector2(16f, -33f), new Vector2(138f, 10f), EnergyColor, frameSprite);
+        StatBar enBar = BuildBar("HUD_Energy", canvas, new Vector2(0f, 1f), style.EnPos, style.EnSize, EnergyColor, frameSprite);
         var enBinder = Ensure<EnergyBarBinder>(enBar.gameObject);
         SetRef(enBinder, "tank", energy);
         SetRef(enBinder, "bar", enBar);
 
-        StatBar bossBar = BuildBar("HUD_BossHP", canvas, new Vector2(0.5f, 0f),
-                                   new Vector2(0f, 30f), new Vector2(360f, 13f), BossColor, bossFrameSprite);
+        StatBar bossBar = BuildBar("HUD_BossHP", canvas, new Vector2(0.5f, 0f), style.BossPos, style.BossSize, BossColor, bossFrameSprite);
         var bossBinder = Ensure<HealthBarBinder>(bossBar.gameObject);
         SetRef(bossBinder, "health", bossCore);
         SetRef(bossBinder, "bar", bossBar);
@@ -127,7 +162,7 @@ public static class HudBuilder
         BuildTimer("HUD_Timer", canvas, timer);
 
         EditorSceneManager.MarkSceneDirty(player.gameObject.scene);
-        Debug.Log("[HUD] HUD pixel-art (fino) montado, limpiado y cableado. Revisa la consola por si hay refs sin fuente y guarda (Ctrl+S).");
+        Debug.Log($"[HUD] HUD '{style.Id}' montado, limpiado y cableado. Revisa la consola por si hay refs sin fuente y guarda (Ctrl+S).");
     }
 
     // Construye una barra (Bg + Fill + Ticks? + Frame) en su contenedor (lo crea si falta) y LIMPIA
@@ -150,6 +185,7 @@ public static class HudBuilder
         fill.fillMethod = Image.FillMethod.Horizontal;
         fill.fillOrigin = (int)Image.OriginHorizontal.Left;
         fill.fillAmount = 1f;
+        fill.material = glowMat;   // glow de cáusticas (null = relleno plano, material UI por defecto)
 
         if (AddTicks)
         {
@@ -219,7 +255,7 @@ public static class HudBuilder
         {
             Debug.LogWarning($"[HUD] Sin fuente pixel: no existe la carpeta {FontDir}. " +
                 "Descarga 'Press Start 2P' (.ttf, gratis en Google Fonts), créala como TMP Font Asset " +
-                "ahí y re-ejecuta Build HUD. De momento el timer usa la fuente por defecto.");
+                "ahí y re-ejecuta el Build HUD. De momento el timer usa la fuente por defecto.");
             return null;
         }
 
@@ -228,7 +264,7 @@ public static class HudBuilder
         {
             Debug.LogWarning($"[HUD] Sin TMP_FontAsset en {FontDir}. Suelta un .ttf pixel (p.ej. " +
                 "'Press Start 2P') y haz clic derecho > Create > TextMeshPro > Font Asset (Sampling " +
-                "Point Size, filtro Point). Re-ejecuta Build HUD y lo cogerá. Timer con fuente por defecto.");
+                "Point Size, filtro Point). Re-ejecuta el Build HUD y lo cogerá. Timer con fuente por defecto.");
             return null;
         }
 
@@ -268,31 +304,65 @@ public static class HudBuilder
         return img;
     }
 
-    // --- Generación de sprites pixel-art ---
+    // --- Generación de assets pixel-art (por estilo) ---
 
-    private static void EnsureSprites()
+    private static void EnsureAssets(HudStyle style)
     {
-        if (!Directory.Exists(ArtDir)) Directory.CreateDirectory(ArtDir);
+        string dir = ArtRoot + "/" + style.Id;
+        if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
 
-        WriteFrameTexture(FramePath, FrameTexSize, FrameBorder, Outline, FrameLight, FrameDark);
-        WriteFrameTexture(BossFramePath, BossFrameTexSize, BossFrameBorder, BossOutline, BossFrameLight, BossFrameDark);
-        WriteFillTexture(FillPath);
-        WriteTicksTexture(TicksPath);
+        string framePath = dir + "/hud_frame.png";
+        string bossFramePath = dir + "/hud_frame_boss.png";
+        string fillPath = dir + "/hud_fill.png";
+        string ticksPath = dir + "/hud_ticks.png";
+
+        WriteFrameTexture(framePath, style.FramePlayerSize, style.FramePlayerBorder, style.OrnateFrame, Outline, FrameLight, FrameDark, FrameAccent);
+        WriteFrameTexture(bossFramePath, style.FrameBossSize, style.FrameBossBorder, style.OrnateFrame, BossOutline, BossFrameLight, BossFrameDark, BossFrameAccent);
+        WriteFillTexture(fillPath);
+        WriteTicksTexture(ticksPath);
 
         AssetDatabase.Refresh();
-        ImportAsSprite(FramePath, FrameBorder);
-        ImportAsSprite(BossFramePath, BossFrameBorder);
-        ImportAsSprite(FillPath, 0);
-        ImportAsSprite(TicksPath, 0);
+        ImportAsSprite(framePath, style.FramePlayerBorder);
+        ImportAsSprite(bossFramePath, style.FrameBossBorder);
+        ImportAsSprite(fillPath, 0);
+        ImportAsSprite(ticksPath, 0);
 
-        frameSprite = AssetDatabase.LoadAssetAtPath<Sprite>(FramePath);
-        bossFrameSprite = AssetDatabase.LoadAssetAtPath<Sprite>(BossFramePath);
-        fillSprite = AssetDatabase.LoadAssetAtPath<Sprite>(FillPath);
-        ticksSprite = AssetDatabase.LoadAssetAtPath<Sprite>(TicksPath);
+        frameSprite = AssetDatabase.LoadAssetAtPath<Sprite>(framePath);
+        bossFrameSprite = AssetDatabase.LoadAssetAtPath<Sprite>(bossFramePath);
+        fillSprite = AssetDatabase.LoadAssetAtPath<Sprite>(fillPath);
+        ticksSprite = AssetDatabase.LoadAssetAtPath<Sprite>(ticksPath);
+
+        glowMat = style.UseGlow ? EnsureGlowMaterial(dir + "/HudBarGlow.mat") : null;
     }
 
-    // Marco biselado: contorno + bisel (claro arriba/izq, oscuro abajo/der), interior transparente.
-    private static void WriteFrameTexture(string path, int n, int border, Color outline, Color light, Color dark)
+    // Crea/carga el material del shader de cáusticas (compartido por los 3 rellenos; cada Image lo
+    // tinta con su color de barra). Si el shader no compila/existe, devuelve null y las barras van planas.
+    private static Material EnsureGlowMaterial(string matPath)
+    {
+        var shader = Shader.Find("SpaceSpaceSpace/UIBarCaustic");
+        if (shader == null)
+        {
+            Debug.LogWarning("[HUD] Shader 'SpaceSpaceSpace/UIBarCaustic' no encontrado (¿compila?). Las barras irán sin glow.");
+            return null;
+        }
+
+        var mat = AssetDatabase.LoadAssetAtPath<Material>(matPath);
+        if (mat == null)
+        {
+            mat = new Material(shader) { name = "HudBarGlow" };
+            AssetDatabase.CreateAsset(mat, matPath);
+        }
+        else if (mat.shader != shader)
+        {
+            mat.shader = shader;
+            EditorUtility.SetDirty(mat);
+        }
+        return mat;
+    }
+
+    // Marco 9-slice. Simple (bisel) o, si 'ornate', con LÍNEA DE ACENTO interior (doble-marco) +
+    // BRACKETS brillantes en las esquinas (que el 9-slice no estira → nítidos).
+    private static void WriteFrameTexture(string path, int n, int border, bool ornate, Color outline, Color light, Color dark, Color accent)
     {
         var tex = new Texture2D(n, n, TextureFormat.RGBA32, false);
         for (int y = 0; y < n; y++)
@@ -300,10 +370,13 @@ public static class HudBuilder
             {
                 int dl = x, dr = n - 1 - x, db = y, dt = n - 1 - y;
                 int m = Mathf.Min(Mathf.Min(dl, dr), Mathf.Min(db, dt));
+                bool corner = Mathf.Min(dl, dr) < border && Mathf.Min(db, dt) < border;  // bloque de esquina
                 Color c;
-                if (m >= border) c = Color.clear;                 // interior transparente
-                else if (m == 0) c = outline;                     // contorno
-                else c = (dt == m || dl == m) ? light : dark;     // bisel
+                if (m >= border) c = Color.clear;                          // interior transparente
+                else if (m == 0) c = outline;                              // contorno exterior
+                else if (ornate && m == border - 1) c = accent;            // línea de acento interior
+                else c = (dt == m || dl == m) ? light : dark;              // bisel
+                if (ornate && corner && m <= 1) c = accent;                // brackets brillantes en esquinas
                 tex.SetPixel(x, y, c);
             }
         tex.Apply();
@@ -334,7 +407,7 @@ public static class HudBuilder
     }
 
     // Tile con muesca diagonal (2px, de abajo-izq a arriba-der). Tileado horizontalmente divide la
-    // barra en celdas anguladas (el look segmentado de la ref.1). El resto, transparente.
+    // barra en celdas anguladas (look segmentado). El resto, transparente.
     private static void WriteTicksTexture(string path)
     {
         int n = TickTexSize;
