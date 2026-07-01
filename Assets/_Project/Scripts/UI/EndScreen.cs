@@ -75,9 +75,6 @@ public class EndScreen : MonoBehaviour
 
     private void GoToMenu()
     {
-        // TODO diagnóstico temporal
-        Debug.Log($"[EndScreen] GoToMenu — GameManager.Instance {(GameManager.Instance != null ? "OK" : "NULL → fallback directo")}");
-
         if (GameManager.Instance != null)
         {
             GameManager.Instance.LoadMenu();   // resetea timeScale y enruta (flujo normal, arrancando desde el menú)
