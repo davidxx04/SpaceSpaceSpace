@@ -114,6 +114,11 @@ public class MatchController : MonoBehaviour
 
         if (timer != null) timer.Stop();
 
+        // Congela el mundo detrás de la pantalla final (en Survived el boss seguiría atacando). Es
+        // seguro: el GameManager restaura timeScale = 1 al cargar escena, la UI usa unscaledDeltaTime
+        // y el input/uGUI siguen respondiendo con timeScale = 0. La pantalla queda pura vista.
+        Time.timeScale = 0f;
+
         float timeRemaining = timer != null ? timer.TimeRemaining : 0f;
         int score = ComputeScore(outcome, timeRemaining);
 

@@ -16,8 +16,10 @@ MonoBehaviour:
   duration: 0.1
   fireTime: 0.05
   cooldown: 0.1
+  automatic: 0
   cancelWindow: 0
   moveMultiplier: 0.6
+  interruptOnHit: 0
   projectilePrefab: {fileID: 1121132523409968560, guid: b1e3a30b6e957854daa0314a30ffa68d, type: 3}
   spawnOffset: 0.6
   projectileSpeed: 12
