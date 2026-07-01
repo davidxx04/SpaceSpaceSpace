@@ -3,9 +3,6 @@ using TMPro;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 
 // Herramienta de editor (carpeta "Editor": NO entra en la build) que monta y CABLEA la pantalla de fin
@@ -14,15 +11,12 @@ using UnityEngine.UI;
 //
 // Reutiliza el CanvasPopups y el placeholder Panel_GameOver que ya existen en la escena Game; pone el
 // componente EndScreen en la RAÍZ del canvas (siempre activo) y cuelga el panel (oculto en Play) como
-// hijo. Además prepara el EventSystem para el cabinet: sustituye el StandaloneInputModule legacy (lee el
-// viejo Input Manager, los botones J/K/L no llegan a "Submit") por InputSystemUIInputModule cableado al
-// mapa "UI" de ArcadeControls (Submit = J/K/L, Navigate = palanca).
+// hijo. Además deja el EventSystem de la escena listo para el cabinet vía UiInputSetup (fuente única).
 //
 // Uso: menú  SpaceSpaceSpace/UI/Build End Screen  (con la escena Game abierta). Luego Ctrl+S.
 public static class EndScreenBuilder
 {
     private const string FontDir = "Assets/_Project/Art/Fonts";
-    private const string ActionsAssetPath = "Assets/_Project/Input/ArcadeControls.inputactions";
 
     private static readonly Color DimColor = new Color(0f, 0f, 0f, 0.78f);          // oscurecedor del fondo
     private static readonly Color TitleColor = new Color(1f, 1f, 1f, 1f);
@@ -70,71 +64,12 @@ public static class EndScreenBuilder
         SetRef(endScreen, "scoreText", score);
         SetRef(endScreen, "subtitle", null);   // ya no hay subtítulo: limpia la ref vieja (evita "Missing")
 
-        // Deja el EventSystem listo para navegar/confirmar con palanca + botones del cabinet.
-        EnsureUiInputModule();
+        // Deja el EventSystem de la escena listo para el cabinet (fuente única de verdad: UiInputSetup).
+        UiInputSetup.ConfigureModule(UiInputSetup.EnsureSingleEventSystem());
 
         EditorSceneManager.MarkSceneDirty(canvas.gameObject.scene);
         Debug.Log("[EndScreen] Pantalla de fin montada y cableada en CanvasPopups. Ajusta el layout si " +
             "quieres y guarda (Ctrl+S). El panel se oculta solo en Play hasta el final de la partida.");
-    }
-
-    // --- EventSystem / input (cabinet) ---
-
-    // Deja el EventSystem de la escena listo para el cabinet: cambia el StandaloneInputModule legacy
-    // (lee el viejo Input Manager, así que los botones J/K/L NUNCA llegan a "Submit") por
-    // InputSystemUIInputModule cableado al mapa "UI" de ArcadeControls (Submit = J/K/L/Enter/Espacio,
-    // Navigate = palanca/WASD/flechas, más ratón para probar en el editor). Idempotente: si ya está
-    // puesto solo re-cablea las referencias. El módulo habilita esas acciones solo al activarse.
-    private static void EnsureUiInputModule()
-    {
-        var es = Object.FindObjectOfType<EventSystem>();
-        if (es == null)
-            es = new GameObject("EventSystem", typeof(EventSystem)).GetComponent<EventSystem>();
-
-        // Fuera el módulo legacy: no navega/confirma con el backend del nuevo Input System.
-        var legacy = es.GetComponent<StandaloneInputModule>();
-        if (legacy != null) Object.DestroyImmediate(legacy);
-
-        var module = es.GetComponent<InputSystemUIInputModule>();
-        if (module == null) module = es.gameObject.AddComponent<InputSystemUIInputModule>();
-
-        var actions = AssetDatabase.LoadAssetAtPath<InputActionAsset>(ActionsAssetPath);
-        if (actions == null)
-        {
-            Debug.LogWarning($"[EndScreen] No se encontró el asset de acciones en '{ActionsAssetPath}'. " +
-                "El EventSystem quedó con InputSystemUIInputModule pero SIN acciones: cablea el mapa 'UI' a mano.");
-            return;
-        }
-
-        module.actionsAsset = actions;
-        module.move = FindActionReference(actions, "UI", "Navigate");
-        module.submit = FindActionReference(actions, "UI", "Submit");
-        module.cancel = FindActionReference(actions, "UI", "Cancel");
-        module.point = FindActionReference(actions, "UI", "Point");
-        module.leftClick = FindActionReference(actions, "UI", "Click");
-
-        EditorUtility.SetDirty(module);
-        EditorSceneManager.MarkSceneDirty(es.gameObject.scene);
-        Debug.Log("[EndScreen] EventSystem preparado para el cabinet: InputSystemUIInputModule + mapa 'UI' " +
-            "(Submit = J/K/L/Enter/Espacio, Navigate = palanca/WASD/flechas).");
-    }
-
-    // Devuelve el sub-asset InputActionReference (los genera el import del .inputactions, uno por acción)
-    // de una acción concreta; es lo único que el módulo puede serializar. Null si no existe todavía.
-    private static InputActionReference FindActionReference(InputActionAsset asset, string map, string action)
-    {
-        string path = AssetDatabase.GetAssetPath(asset);
-        foreach (var obj in AssetDatabase.LoadAllAssetsAtPath(path))
-        {
-            if (obj is InputActionReference reference && reference.action != null &&
-                reference.action.actionMap != null &&
-                reference.action.actionMap.name == map && reference.action.name == action)
-                return reference;
-        }
-
-        Debug.LogWarning($"[EndScreen] No hay InputActionReference para '{map}/{action}'. Reimporta " +
-            "ArcadeControls.inputactions (clic derecho > Reimport) y vuelve a ejecutar el builder.");
-        return null;
     }
 
     // --- Canvas / panel ---
