@@ -27,8 +27,7 @@ public static class EndScreenBuilder
     private static readonly Color DimColor = new Color(0f, 0f, 0f, 0.78f);          // oscurecedor del fondo
     private static readonly Color TitleColor = new Color(1f, 1f, 1f, 1f);
     private static readonly Color BodyColor = new Color(0.85f, 0.88f, 0.95f, 1f);
-    private static readonly Color ButtonColor = new Color(0.16f, 0.18f, 0.24f, 1f);
-    private static readonly Color ButtonTextColor = new Color(0.95f, 0.97f, 1f, 1f);
+    private static readonly Color PromptColor = new Color(0.70f, 0.74f, 0.82f, 1f); // "press any button"
 
     [MenuItem("SpaceSpaceSpace/UI/Build End Screen")]
     public static void Build()
@@ -52,15 +51,14 @@ public static class EndScreenBuilder
         dim.transform.SetSiblingIndex(0);   // detrás del resto
         dim.raycastTarget = true;
 
-        // Textos centrados (anclados al centro; posición Y relativa).
-        TMP_Text title = EnsureText(panel.transform, "Title", "VICTORY", font, 64f, TitleColor, new Vector2(0f, 120f), new Vector2(900f, 90f));
-        TMP_Text subtitle = EnsureText(panel.transform, "Subtitle", "", font, 28f, BodyColor, new Vector2(0f, 50f), new Vector2(900f, 50f));
-        TMP_Text score = EnsureText(panel.transform, "Score", "SCORE  0", font, 36f, BodyColor, new Vector2(0f, -20f), new Vector2(900f, 60f));
+        // Textos centrados (anclados al centro; posición Y relativa). Sin subtítulo: pantalla más limpia.
+        TMP_Text title = EnsureText(panel.transform, "Title", "VICTORY", font, 64f, TitleColor, new Vector2(0f, 90f), new Vector2(900f, 90f));
+        TMP_Text score = EnsureText(panel.transform, "Score", "SCORE  0", font, 36f, BodyColor, new Vector2(0f, 0f), new Vector2(900f, 60f));
 
-        // Botón único "Volver al menú".
-        Button button = EnsureButton(panel.transform, "MenuButton", "VOLVER AL MENÚ", font, new Vector2(0f, -120f), new Vector2(360f, 64f));
+        // "Pulsa cualquier botón": NO es un botón, es texto. EndScreen escucha cualquier tecla y vuelve al menú.
+        EnsureText(panel.transform, "Prompt", "PRESS ANY BUTTON", font, 24f, PromptColor, new Vector2(0f, -110f), new Vector2(900f, 40f));
 
-        // Borra restos del placeholder (textos sueltos que traía Panel_GameOver) fuera de la whitelist.
+        // Borra restos del placeholder (textos sueltos / botón viejo) fuera de la whitelist.
         CleanupChildren(panel.transform);
 
         // Componente EndScreen en la RAÍZ del canvas (siempre activo) + cableado de todas las refs.
@@ -69,9 +67,8 @@ public static class EndScreenBuilder
         SetRef(endScreen, "panelRoot", panel);
         SetRef(endScreen, "panelGroup", panel.GetComponent<CanvasGroup>());
         SetRef(endScreen, "title", title);
-        SetRef(endScreen, "subtitle", subtitle);
         SetRef(endScreen, "scoreText", score);
-        SetRef(endScreen, "menuButton", button);
+        SetRef(endScreen, "subtitle", null);   // ya no hay subtítulo: limpia la ref vieja (evita "Missing")
 
         // Deja el EventSystem listo para navegar/confirmar con palanca + botones del cabinet.
         EnsureUiInputModule();
@@ -191,7 +188,7 @@ public static class EndScreenBuilder
     }
 
     // Hijos que el builder posee en el panel; cualquier otro (restos del placeholder) se borra.
-    private static readonly string[] PanelChildWhitelist = { "Dim", "Title", "Subtitle", "Score", "MenuButton" };
+    private static readonly string[] PanelChildWhitelist = { "Dim", "Title", "Score", "Prompt" };
 
     private static void CleanupChildren(Transform panel)
     {
@@ -238,44 +235,6 @@ public static class EndScreenBuilder
         rt.sizeDelta = sizeDelta;
         rt.anchoredPosition = anchoredPos;
         return tmp;
-    }
-
-    private static Button EnsureButton(Transform parent, string name, string label, TMP_FontAsset font,
-                                       Vector2 anchoredPos, Vector2 size)
-    {
-        Transform t = parent.Find(name);
-        GameObject go = t != null ? t.gameObject : new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
-        if (t == null) go.transform.SetParent(parent, false);
-
-        var rt = go.GetComponent<RectTransform>();
-        rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
-        rt.pivot = new Vector2(0.5f, 0.5f);
-        rt.sizeDelta = size;
-        rt.anchoredPosition = anchoredPos;
-
-        var img = go.GetComponent<Image>();
-        if (img == null) img = go.AddComponent<Image>();
-        img.color = ButtonColor;
-
-        var btn = go.GetComponent<Button>();
-        if (btn == null) btn = go.AddComponent<Button>();
-        btn.targetGraphic = img;
-
-        // Etiqueta hija (ocupa todo el botón).
-        Transform lt = go.transform.Find("Label");
-        GameObject lg = lt != null ? lt.gameObject : new GameObject("Label", typeof(RectTransform));
-        if (lt == null) lg.transform.SetParent(go.transform, false);
-        var tmp = lg.GetComponent<TextMeshProUGUI>();
-        if (tmp == null) tmp = lg.AddComponent<TextMeshProUGUI>();
-        tmp.text = label;
-        tmp.alignment = TextAlignmentOptions.Center;
-        tmp.color = ButtonTextColor;
-        tmp.fontSize = 26f;
-        tmp.raycastTarget = false;
-        if (font != null) tmp.font = font;
-        Stretch(tmp.rectTransform);
-
-        return btn;
     }
 
     // --- Helpers (mismo estilo que HudBuilder) ---
