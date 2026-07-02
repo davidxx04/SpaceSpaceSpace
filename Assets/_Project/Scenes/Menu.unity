@@ -734,7 +734,7 @@ GameObject:
   - component: {fileID: 489079502}
   - component: {fileID: 489079501}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: LeaderboardSeeder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2686,5 +2686,5 @@ SceneRoots:
   - {fileID: 1252518684}
   - {fileID: 661115854}
   - {fileID: 145841089}
-  - {fileID: 489079502}
   - {fileID: 480324909}
+  - {fileID: 489079502}

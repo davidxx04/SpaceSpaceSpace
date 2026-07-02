@@ -30,6 +30,8 @@ public class EndScreen : MonoBehaviour
     [SerializeField] private TMP_Text title;
     [SerializeField] private TMP_Text subtitle;    // opcional (puede no existir en la pantalla)
     [SerializeField] private TMP_Text scoreText;
+    [Tooltip("Pantalla de nickname (mismo CanvasPopups). Si el score califica en el top 100, el 'pulsa cualquier botón' va ahí en vez de al menú.")]
+    [SerializeField] private NicknameEntryScreen nicknameScreen;
 
     [Header("Continuar")]
     [Tooltip("Gracia (segundos, sin escalar) antes de aceptar 'pulsa cualquier botón', para no saltar la pantalla por accidente.")]
@@ -49,6 +51,7 @@ public class EndScreen : MonoBehaviour
     // Estado de "esperando pulsación": activo mientras la pantalla está visible tras la gracia.
     private bool waitingForInput;
     private float shownAtUnscaled;
+    private MatchController.MatchResult lastResult;   // para decidir el destino al continuar
 
     private void Awake()
     {
@@ -90,6 +93,7 @@ public class EndScreen : MonoBehaviour
 
     private void Show(MatchController.MatchResult result)
     {
+        lastResult = result;
         OutcomeStyle style = ResolveStyle(result.Outcome);
 
         if (title != null) { title.text = style.title; title.color = style.color; }
@@ -112,6 +116,21 @@ public class EndScreen : MonoBehaviour
         if (AnyButtonPressed())
         {
             waitingForInput = false;
+            Continue();
+        }
+    }
+
+    // Destino del "pulsa cualquier botón": si el score entra en el top 100 (cualquier desenlace,
+    // estilo arcade), pasa a la pantalla de nickname; si no, al menú como siempre.
+    private void Continue()
+    {
+        if (nicknameScreen != null && Leaderboard.Qualifies(lastResult.Score))
+        {
+            SetVisible(false);   // esta pantalla se retira; la de nickname toma el relevo
+            nicknameScreen.Show(lastResult.Score);
+        }
+        else
+        {
             GoToMenu();
         }
     }

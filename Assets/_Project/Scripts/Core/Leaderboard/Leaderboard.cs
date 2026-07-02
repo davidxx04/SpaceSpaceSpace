@@ -43,6 +43,21 @@ public static class Leaderboard
         return score > cache[cache.Count - 1].score;
     }
 
+    // Rango 1-based en el que ENTRARÍA un score si se insertara ahora, sin insertarlo (-1 si no
+    // califica). Para el mensaje "TOP X" de la pantalla de nickname, que se muestra ANTES de escribir
+    // el nombre. Mismo criterio de empates que Insert: la entrada nueva queda por debajo de las que ya
+    // tienen ese score, así que su posición es "cuántas entradas tienen score >= el mío" + 1.
+    public static int PeekRank(int score)
+    {
+        if (!Qualifies(score)) return -1;
+
+        EnsureLoaded();
+        int above = 0;
+        for (int i = 0; i < cache.Count; i++)
+            if (cache[i].score >= score) above++;
+        return above + 1;
+    }
+
     // Vacía la tabla y persiste el borrado. Pensado para reset/pruebas (p. ej. LeaderboardSeeder).
     public static void Clear()
     {
