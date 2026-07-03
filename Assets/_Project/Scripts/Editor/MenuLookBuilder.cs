@@ -34,6 +34,15 @@ public static class MenuLookBuilder
 
     private static readonly Vector2 ButtonSize = new Vector2(320f, 64f);
 
+    // Botones del menú: CIAN eléctrico (armoniza con la mitad superior del título azul->magenta y con
+    // el fondo apagado; contrasta bien con el magenta del título). Hover = versión más caliente (->blanco).
+    // Las teclas del nickname NO usan esto: siguen naranjas con su propio NeonKey.mat.
+    private static readonly Color ButtonBaseColor = new Color(0.10f, 0.72f, 0.95f, 1f);
+    private static readonly Color ButtonFocusColor = new Color(0.78f, 0.97f, 1f, 1f);
+
+    // Path del scrim (lecho oscuro bajo la UI), generado por código si no existe.
+    private const string ScrimPath = "Assets/_Project/Art/UI/menu_scrim.png";
+
     // Cromo ochentero del título: cian arriba -> magenta abajo (sobre fondo térmico oscuro).
     private static readonly Color TitleTop = new Color(0.65f, 0.95f, 1f, 1f);
     private static readonly Color TitleBottom = new Color(1f, 0.35f, 0.75f, 1f);
@@ -58,7 +67,19 @@ public static class MenuLookBuilder
         }
 
         // --- Fondo térmico (SpaceBackground reutilizado con el material ThermalFlow) ---
-        Material thermalMat = EnsureMaterial(ThermalShaderName, ThermalMaterialPath, null);
+        // MOODY por defecto: apagado y oscuro para que el fondo RECEDA y la UI sea lo más brillante
+        // (arreglo del "a veces queda fatal": mata el amarillo chillón, sube viñeta, baja estrellas).
+        Material thermalMat = EnsureMaterial(ThermalShaderName, ThermalMaterialPath, m =>
+        {
+            m.SetColor("_EdgeColor", new Color(0.42f, 0.06f, 0.05f));    // brasa roja apagada
+            m.SetColor("_FringeColor", new Color(0.55f, 0.32f, 0.08f));  // ámbar apagado (mata el amarillo)
+            m.SetColor("_BodyColor", new Color(0.06f, 0.34f, 0.40f));    // teal profundo
+            m.SetFloat("_BlobIntensity", 0.62f);
+            m.SetFloat("_FlareIntensity", 0.7f);
+            m.SetFloat("_StarBrightness", 0.5f);
+            m.SetFloat("_Vignette", 0.55f);
+            m.SetFloat("_HueCycleSpeed", 0.005f);                        // vira más lento y sutil
+        });
         if (thermalMat == null)
         {
             Debug.LogError($"[MenuLook] Shader '{ThermalShaderName}' no encontrado (¿compila?). Aborto.");
@@ -91,8 +112,14 @@ public static class MenuLookBuilder
         // --- Título: imagen si existe GameTitle.png; si no, texto con fuente+degradado ---
         EnsureTitle(font, glowPreset);
 
-        // --- Botones neón ---
-        Material plateMat = EnsureMaterial(NeonShaderName, NeonButtonMatPath, null);
+        // --- Botones neón (cian; hover más caliente; borde de selección marcado) ---
+        Material plateMat = EnsureMaterial(NeonShaderName, NeonButtonMatPath, m =>
+        {
+            m.SetColor("_BaseColor", ButtonBaseColor);
+            m.SetColor("_FocusColor", ButtonFocusColor);
+            m.SetFloat("_FocusBorderWidth", 4.5f);   // borde blanco de selección más gordo (se lee claro)
+            m.SetFloat("_BorderFlickerMin", 0.5f);   // que no se apague demasiado al parpadear
+        });
         Material linesMat = EnsureMaterial(NeonShaderName, NeonLinesMatPath, m =>
         {
             m.SetFloat("_LinesOnly", 1f);
@@ -108,14 +135,90 @@ public static class MenuLookBuilder
             BuildNeonButton(FindButton("Btn_Leaderboard"), plateMat, linesMat, font, glowPreset);
         }
 
-        // Aire entre título y placas (el VerticalLayoutGroup del canvas coloca, no dimensiona).
-        var vlg = startBtn.GetComponentInParent<Canvas>().GetComponent<VerticalLayoutGroup>();
-        if (vlg != null) { vlg.spacing = 16f; EditorUtility.SetDirty(vlg); }
+        Canvas menuCanvas = startBtn.GetComponentInParent<Canvas>();
+
+        // Scrim oscuro central: lecho ESTABLE para la UI. Aunque el fondo animado cambie de color, el
+        // título y los botones siempre tienen debajo una zona oscura => contraste constante.
+        EnsureScrim(menuCanvas);
+
+        // Composición compacta: agrupa título+botones centrados. Antes el ForceExpandHeight repartía
+        // toda la altura y dejaba huecos enormes; ahora usa el tamaño real de cada hijo (LayoutElement).
+        var vlg = menuCanvas.GetComponent<VerticalLayoutGroup>();
+        if (vlg != null)
+        {
+            vlg.childControlWidth = false; vlg.childControlHeight = false;
+            vlg.childForceExpandWidth = true; vlg.childForceExpandHeight = false;
+            vlg.childAlignment = TextAnchor.MiddleCenter;
+            vlg.spacing = 22f;
+            EditorUtility.SetDirty(vlg);
+        }
 
         EditorSceneManager.MarkSceneDirty(cam.gameObject.scene);
-        Debug.Log("[MenuLook] Menú vestido: fondo térmico (MenuThermal.mat) + botones neón CRT " +
-            "(NeonButton.mat / NeonLines.mat: colores, scanlines, flicker) + fuente de Art/Fonts " +
-            "(para cambiarla: deja un único .ttf/.otf, borra el .asset y re-ejecuta). Guarda (Ctrl+S).");
+        Debug.Log("[MenuLook] Menú vestido: fondo MOODY (MenuThermal.mat) + scrim central + botones CIAN " +
+            "con hover caliente y borde de selección (NeonButton.mat) + layout compacto. Las teclas del " +
+            "nickname (NeonKey.mat) NO se tocan. Para aplicar colores nuevos: BORRA MenuThermal.mat y " +
+            "NeonButton.mat y re-ejecuta. Guarda (Ctrl+S).");
+    }
+
+    // Lecho oscuro radial detrás de la UI (hijo del canvas del menú, IGNORADO por el layout). Se
+    // genera un PNG radial (negro en el centro -> transparente en los bordes) si no existe.
+    private static void EnsureScrim(Canvas canvas)
+    {
+        Sprite sprite = EnsureScrimSprite();
+
+        Transform t = canvas.transform.Find("MenuScrim");
+        GameObject go = t != null ? t.gameObject
+            : new GameObject("MenuScrim", typeof(RectTransform), typeof(Image), typeof(LayoutElement));
+        if (t == null) go.transform.SetParent(canvas.transform, false);
+        go.transform.SetSiblingIndex(0);   // detrás del título y los botones
+
+        var le = Ensure<LayoutElement>(go);
+        le.ignoreLayout = true;            // el VerticalLayoutGroup lo salta (no es un "botón" más)
+
+        var rt = (RectTransform)go.transform;
+        rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one;
+        rt.offsetMin = Vector2.zero; rt.offsetMax = Vector2.zero;
+
+        var img = Ensure<Image>(go);
+        img.sprite = sprite;
+        img.color = Color.white;
+        img.raycastTarget = false;
+    }
+
+    private static Sprite EnsureScrimSprite()
+    {
+        var existing = AssetDatabase.LoadAssetAtPath<Sprite>(ScrimPath);
+        if (existing != null) return existing;
+
+        if (!AssetDatabase.IsValidFolder("Assets/_Project/Art/UI"))
+            AssetDatabase.CreateFolder("Assets/_Project/Art", "UI");
+
+        const int N = 256;
+        const float MaxAlpha = 0.66f;
+        var tex = new Texture2D(N, N, TextureFormat.RGBA32, false);
+        Vector2 c = new Vector2((N - 1) * 0.5f, (N - 1) * 0.5f);
+        float maxD = c.magnitude;
+        for (int y = 0; y < N; y++)
+            for (int x = 0; x < N; x++)
+            {
+                float d = Vector2.Distance(new Vector2(x, y), c) / maxD;   // 0 centro -> 1 esquina
+                float a = MaxAlpha * (1f - Mathf.SmoothStep(0.2f, 1.0f, d));
+                tex.SetPixel(x, y, new Color(0f, 0f, 0f, a));
+            }
+        tex.Apply();
+        System.IO.File.WriteAllBytes(ScrimPath, tex.EncodeToPNG());
+        Object.DestroyImmediate(tex);
+
+        AssetDatabase.ImportAsset(ScrimPath);
+        var imp = (TextureImporter)AssetImporter.GetAtPath(ScrimPath);
+        imp.textureType = TextureImporterType.Sprite;
+        imp.spriteImportMode = SpriteImportMode.Single;
+        imp.alphaIsTransparency = true;
+        imp.mipmapEnabled = false;
+        imp.wrapMode = TextureWrapMode.Clamp;
+        imp.SaveAndReimport();
+
+        return AssetDatabase.LoadAssetAtPath<Sprite>(ScrimPath);
     }
 
     // Convierte un Button de texto plano en placa neón: Image raíz con NeonPlate, label blanco con
@@ -127,6 +230,11 @@ public static class MenuLookBuilder
 
         var rt = (RectTransform)btn.transform;
         rt.sizeDelta = ButtonSize;
+
+        // Tamaño para el VerticalLayoutGroup compacto (ForceExpandHeight off usa el preferido).
+        var btnLe = Ensure<LayoutElement>(btn.gameObject);
+        btnLe.preferredWidth = ButtonSize.x;
+        btnLe.preferredHeight = ButtonSize.y;
 
         // Placa: el Image raíz del botón pasa a pintar el shader (sin sprite; el color lo pone él).
         var plate = btn.GetComponent<Image>();

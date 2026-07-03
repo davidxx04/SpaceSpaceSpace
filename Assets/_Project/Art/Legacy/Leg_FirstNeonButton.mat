@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: NeonButton
+  m_Name: Leg_FirstNeonButton
   m_Shader: {fileID: 4800000, guid: 15770e16f7d56a94ca5395892802da08, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -30,7 +30,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _BloomWidth: 10
-    - _BorderFlickerMin: 0.5
+    - _BorderFlickerMin: 0.4
     - _BorderFlickerRate: 7
     - _ColorMask: 15
     - _CornerRadius: 14
@@ -40,7 +40,7 @@ Material:
     - _FlickerAmount: 0.6
     - _FlickerRate: 9
     - _Focus: 0
-    - _FocusBorderWidth: 4.5
+    - _FocusBorderWidth: 2.5
     - _FocusFlickerSpeed: 22
     - _LinePeriod: 6
     - _LineStrength: 0.45
@@ -57,9 +57,9 @@ Material:
     - _UnscaledTime: 0
     - _UseUIAlphaClip: 0
     m_Colors:
-    - _BaseColor: {r: 0.07756385, g: 0.074610114, b: 0.07924521, a: 0.46666667}
+    - _BaseColor: {r: 1, g: 0.41999996, b: 0.059999965, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _FocusBorderColor: {r: 1, g: 1, b: 1, a: 1}
-    - _FocusColor: {r: 0.66482735, g: 0.9003662, b: 0.93962264, a: 1}
+    - _FocusColor: {r: 1, g: 0.9, b: 0.68, a: 1}
     - _Size: {r: 320, g: 64, b: 0, a: 0}
   m_BuildTextureStacks: []
