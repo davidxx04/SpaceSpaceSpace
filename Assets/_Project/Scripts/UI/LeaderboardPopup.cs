@@ -40,6 +40,12 @@ public class LeaderboardPopup : MonoBehaviour
     [Tooltip("Gracia (segundos) antes de aceptar el cierre, para que la misma pulsación que abre no lo cierre.")]
     [SerializeField] private float inputDelay = 0.3f;
 
+    [Header("Efectos retro (hoja)")]
+    [Tooltip("Abanico espectral + grano de película sobre la hoja (se crea en runtime). Desmarcar para quitarlo.")]
+    [SerializeField] private bool spectrumFx = true;
+    [Tooltip("Franjas Polaroid entre la cabecera y la lista (se crean en runtime). Desmarcar para quitarlas.")]
+    [SerializeField] private bool stripesFx = true;
+
     private ArcadeControls controls;
     private readonly List<LeaderboardRow> spawnedRows = new List<LeaderboardRow>();
     private bool isOpen;
@@ -54,6 +60,14 @@ public class LeaderboardPopup : MonoBehaviour
         controls.UI.Submit.performed += OnClosePressed;
 
         SetVisible(false);   // oculto hasta que se pulse el botón Leaderboard
+
+        // Efectos retro de la hoja: hijos runtime del panel (heredan el alpha del CanvasGroup).
+        if (panelGroup != null)
+        {
+            var panelRt = (RectTransform)panelGroup.transform;
+            if (spectrumFx) LeaderboardSheetFx.CreateSpectrum(panelRt);
+            if (stripesFx) LeaderboardSheetFx.CreateStripes(panelRt);
+        }
     }
 
     private void OnDestroy()
