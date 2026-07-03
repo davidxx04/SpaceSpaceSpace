@@ -22,7 +22,6 @@ using UnityEngine.UI;
 // Build End Screen). Luego Ctrl+S.
 public static class NicknameEntryBuilder
 {
-    private const string FontDir = "Assets/_Project/Art/Fonts";
 
     // --- Layout del teclado ---
     private const float KeySize = 48f;        // teclas cuadradas
@@ -42,19 +41,17 @@ public static class NicknameEntryBuilder
         new[] { "Z", "X", "C", "V", "B", "N", "M", "ENTER" },
     };
 
-    // --- Paleta (foco ámbar, como el resto de la UI de cabina) ---
+    // --- Paleta ---
     private static readonly Color DimColor = new Color(0f, 0f, 0f, 0.82f);
     private static readonly Color TitleColor = new Color(1f, 0.85f, 0.30f, 1f);
     private static readonly Color RankColor = new Color(0.90f, 0.93f, 1f, 1f);
     private static readonly Color PromptColor = new Color(0.70f, 0.74f, 0.82f, 1f);
     private static readonly Color NameColor = new Color(1f, 1f, 1f, 1f);
 
-    // Teclas claras con letra oscura (legible tanto en reposo como bajo el foco ámbar).
-    private static readonly Color KeyNormal = new Color(0.72f, 0.75f, 0.82f, 1f);
-    private static readonly Color KeyFocus = new Color(1f, 0.85f, 0.30f, 1f);
-    private static readonly Color KeyPressed = new Color(0.85f, 0.60f, 0.15f, 1f);
-    private static readonly Color KeyDisabled = new Color(0.5f, 0.5f, 0.5f, 0.5f);
-    private static readonly Color KeyLabel = new Color(0.08f, 0.09f, 0.12f, 1f);
+    // Teclas = placas NEÓN (shader NeonPlate, variante calmada NeonKey.mat): el foco rojo
+    // parpadeante lo pinta el shader vía NeonButtonFx; letra blanca encima.
+    private const string NeonShaderName = "SpaceSpaceSpace/NeonPlate";
+    private const string NeonKeyMatPath = "Assets/_Project/Art/NeonKey.mat";
 
     [MenuItem("SpaceSpaceSpace/UI/Build Nickname Entry")]
     public static void Build()
@@ -69,7 +66,23 @@ public static class NicknameEntryBuilder
         }
 
         Canvas canvas = FindPopupsCanvas();
-        TMP_FontAsset font = FindPixelFont();
+        TMP_FontAsset font = FontLibrary.EnsureFont();   // fuente gruesa del proyecto (Art/Fonts)
+
+        // Material de las teclas: variante calmada de la placa neón (solo se configura al crearse;
+        // los retoques del usuario en NeonKey.mat sobreviven a re-ejecuciones).
+        Material keyMat = MenuLookBuilder.EnsureMaterial(NeonShaderName, NeonKeyMatPath, m =>
+        {
+            m.SetFloat("_CornerRadius", 10f);
+            m.SetFloat("_BloomWidth", 6f);
+            m.SetFloat("_LinePeriod", 5f);
+            m.SetFloat("_LineThickness", 1.2f);
+            m.SetFloat("_LineStrength", 0.30f);
+            m.SetFloat("_ScrollSpeed", 3f);
+            m.SetFloat("_FlickerAmount", 0.35f);
+            m.SetFloat("_DropChance", 0.08f);
+        });
+        if (keyMat == null)
+            Debug.LogWarning($"[Nickname] Shader '{NeonShaderName}' no encontrado: teclas sin placa neón.");
 
         // Panel a pantalla completa (visible en edición para maquetar; oculto en Play por Awake).
         GameObject panel = EnsurePanel(canvas.transform);
@@ -89,7 +102,7 @@ public static class NicknameEntryBuilder
         var screen = Ensure<NicknameEntryScreen>(canvas.gameObject);
 
         // Teclado: se destruye y reconstruye entero cada build (autoritativo, sin dedupes).
-        Button firstKey = BuildKeyboard(panel.transform, font, screen);
+        Button firstKey = BuildKeyboard(panel.transform, font, screen, keyMat);
 
         CleanupChildren(panel.transform);
 
@@ -115,7 +128,7 @@ public static class NicknameEntryBuilder
 
     // --- Teclado ---
 
-    private static Button BuildKeyboard(Transform panel, TMP_FontAsset font, NicknameEntryScreen screen)
+    private static Button BuildKeyboard(Transform panel, TMP_FontAsset font, NicknameEntryScreen screen, Material keyMat)
     {
         Transform old = panel.Find("Keyboard");
         if (old != null) Object.DestroyImmediate(old.gameObject);
@@ -148,7 +161,7 @@ public static class NicknameEntryBuilder
             {
                 float w = KeyWidth(defs[i]);
                 float cx = x + w * 0.5f;
-                buttons[i] = BuildKey(go.transform, defs[i], font, new Vector2(cx, y), new Vector2(w, KeySize), screen);
+                buttons[i] = BuildKey(go.transform, defs[i], font, new Vector2(cx, y), new Vector2(w, KeySize), screen, keyMat);
                 centers[i] = cx;
                 x += w + KeyGap;
             }
@@ -167,7 +180,7 @@ public static class NicknameEntryBuilder
         def == "DEL" ? DelWidth : def == "ENTER" ? EnterWidth : KeySize;
 
     private static Button BuildKey(Transform keyboard, string def, TMP_FontAsset font,
-                                   Vector2 center, Vector2 size, NicknameEntryScreen screen)
+                                   Vector2 center, Vector2 size, NicknameEntryScreen screen, Material keyMat)
     {
         var go = new GameObject("Key_" + def, typeof(RectTransform), typeof(Image));
         go.transform.SetParent(keyboard, false);
@@ -177,35 +190,34 @@ public static class NicknameEntryBuilder
         rt.sizeDelta = size;
         rt.anchoredPosition = center;
 
-        // El Image se deja blanco: el color visible lo pone el tinte del Button por estado.
+        // Placa neón: el shader pinta color y estados (blanco = sin tinte extra).
         var img = go.GetComponent<Image>();
         img.color = Color.white;
+        img.material = keyMat;
 
         var btn = go.AddComponent<Button>();
         btn.targetGraphic = img;
-        btn.transition = Selectable.Transition.ColorTint;
-        var cb = btn.colors;
-        cb.normalColor = KeyNormal;
-        cb.highlightedColor = KeyFocus;
-        cb.selectedColor = KeyFocus;
-        cb.pressedColor = KeyPressed;
-        cb.disabledColor = KeyDisabled;
-        cb.fadeDuration = 0.08f;
-        btn.colors = cb;
+        btn.transition = Selectable.Transition.None;   // los estados los pinta NeonPlate vía NeonButtonFx
 
-        // Label centrado (más pequeño en DEL/ENTER para que quepan).
+        // Estados del shader: borde blanco de foco al seleccionar, destello al pulsar, reloj sin escalar.
+        var fx = go.AddComponent<NeonButtonFx>();
+        SetRef(fx, "plate", img);
+
+        // Label centrado, blanco sobre la placa (más pequeño en DEL/ENTER para que quepan).
         var lgo = new GameObject("Label", typeof(RectTransform));
         lgo.transform.SetParent(go.transform, false);
         var tmp = lgo.AddComponent<TextMeshProUGUI>();
         tmp.text = def;
-        tmp.fontSize = (def == "DEL" || def == "ENTER") ? 16f : 24f;
-        tmp.color = KeyLabel;
+        tmp.fontSize = (def == "DEL" || def == "ENTER") ? 15f : 22f;
+        tmp.color = Color.white;
         tmp.alignment = TextAlignmentOptions.Center;
         tmp.raycastTarget = false;
         if (font != null) tmp.font = font;
         var lrt = tmp.rectTransform;
         lrt.anchorMin = Vector2.zero; lrt.anchorMax = Vector2.one;
         lrt.offsetMin = Vector2.zero; lrt.offsetMax = Vector2.zero;
+
+        SetRef(fx, "label", tmp);   // la letra de la tecla enfocada parpadea
 
         // onClick persistente según la tecla (los botones son nuevos cada build: sin dedupe).
         switch (def)
@@ -365,12 +377,5 @@ public static class NicknameEntryBuilder
         so.ApplyModifiedProperties();
     }
 
-    private static TMP_FontAsset FindPixelFont()
-    {
-        if (!AssetDatabase.IsValidFolder(FontDir)) return null;
-        var guids = AssetDatabase.FindAssets("t:TMP_FontAsset", new[] { FontDir });
-        if (guids.Length == 0) return null;
-        return AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(AssetDatabase.GUIDToAssetPath(guids[0]));
-    }
 }
 #endif
