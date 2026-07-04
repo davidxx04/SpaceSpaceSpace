@@ -49,7 +49,8 @@ public class SwooshAttackSO : BossAttackSO
         if (telegraphSeconds > 0f) yield return new WaitForSeconds(telegraphSeconds);
 
         // (2) barrido: la barra cuerpo viaja por 'travelDistance' a 'travelSpeed' con el hitbox activo.
-        sw.BeginBody(dir, width, thickness, c);
+        // 'parryable' elige la paleta del fuego (cálida = esquiva, fría = parry).
+        sw.BeginBody(dir, width, thickness, c, parryable);
         var info = new DamageInfo(damage, ctx.Boss != null ? ctx.Boss.gameObject : null, dir) { parryable = parryable };
         sw.ActivateHitbox(info);
 
@@ -63,6 +64,7 @@ public class SwooshAttackSO : BossAttackSO
         }
 
         sw.DeactivateHitbox();
+        sw.EndBody();   // último fantasma de residuo en la posición final: se enfría, sin corte seco
         PoolManager.Despawn(sw);
         yield return Recover();
     }
