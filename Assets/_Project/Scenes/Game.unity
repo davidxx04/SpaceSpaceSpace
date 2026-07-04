@@ -465,6 +465,12 @@ MonoBehaviour:
     subtitle: "Se acab\xF3 el tiempo"
     color: {r: 0.4, g: 0.8, b: 1, a: 1}
   scoreFormat: SCORE  {0}
+  retroFont: {fileID: 11400000, guid: 0b76ce65633a10a4db46692bf835b757, type: 2}
+  promptText: {fileID: 1607495139}
+  sheetVictory: {fileID: 2100000, guid: 9c5f1a83b2e74d6c8a304f9e1d7b5c28, type: 2}
+  sheetDeath: {fileID: 2100000, guid: 4b8e2d17c6a94f3e9d015a7b3c8f6e42, type: 2}
+  sheetSurvived: {fileID: 2100000, guid: 2e7d4b91f5c83a608b1264ad9e0c7f53, type: 2}
+  sheetFx: 1
 --- !u!114 &122283668
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -483,6 +489,8 @@ MonoBehaviour:
   rankFormat: YOU REACHED TOP {0}!
   maxLength: 10
   inputDelay: 0.3
+  sheetMaterial: {fileID: 2100000, guid: 6a1f8c2d9b3e47f0a25c8d1e4b7f9a36, type: 2}
+  sheetFx: 1
 --- !u!1 &122401123
 GameObject:
   m_ObjectHideFlags: 0

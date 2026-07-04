@@ -29,6 +29,14 @@ public class NicknameEntryScreen : MonoBehaviour
     [Tooltip("Gracia (segundos, sin escalar) antes de aceptar teclas: la pulsación que cerró el EndScreen no debe escribir.")]
     [SerializeField] private float inputDelay = 0.3f;
 
+    [Header("Retro (hoja halftone)")]
+    [Tooltip("Material HalftoneNoise del fondo (neutro y sutil): tapa el juego congelado tras el panel.")]
+    [SerializeField] private Material sheetMaterial;
+    [Tooltip("Hoja halftone animada de fondo (se crea en runtime). Desmarcar para el Dim clásico.")]
+    [SerializeField] private bool sheetFx = true;
+
+    private EndScreenSheetFx fx;
+
     private int pendingScore;
     private string nickname = string.Empty;
     private bool done;   // ya se confirmó (evita doble-insert mientras carga el menú)
@@ -36,6 +44,10 @@ public class NicknameEntryScreen : MonoBehaviour
     private void Awake()
     {
         SetVisible(false);   // oculto hasta que EndScreen decida que el score califica
+
+        // Fondo halftone (mismo componente que el EndScreen): tapa el juego congelado tras el panel.
+        if (sheetFx && panelGroup != null)
+            fx = EndScreenSheetFx.Create((RectTransform)panelGroup.transform);
     }
 
     // La llama EndScreen tras el "press any button" si Leaderboard.Qualifies(score).
@@ -51,6 +63,7 @@ public class NicknameEntryScreen : MonoBehaviour
         if (rankText != null) rankText.text = string.Format(rankFormat, rank);
         RefreshName();
 
+        if (fx != null) fx.Apply(sheetMaterial);
         SetVisible(true);
 
         // Gracia anti-carrera (misma lección que LeaderboardPopup): la pulsación que cerró el

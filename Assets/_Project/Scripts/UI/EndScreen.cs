@@ -48,6 +48,20 @@ public class EndScreen : MonoBehaviour
     [Tooltip("Formato del score mostrado. {0} = puntuación.")]
     [SerializeField] private string scoreFormat = "SCORE  {0}";
 
+    [Header("Retro (hoja halftone + tipografía)")]
+    [Tooltip("Fuente retro (Archivo Black) aplicada a Título/Score/Prompt al arrancar. Vacío = fuente actual.")]
+    [SerializeField] private TMP_FontAsset retroFont;
+    [Tooltip("Texto 'PRESS ANY BUTTON' (para tipografía y tinta por hoja). Si está vacío se busca el hijo 'Prompt'.")]
+    [SerializeField] private TMP_Text promptText;
+    [Tooltip("Material HalftoneNoise por desenlace. Vacío = sin hoja para ese desenlace (queda el Dim).")]
+    [SerializeField] private Material sheetVictory;
+    [SerializeField] private Material sheetDeath;
+    [SerializeField] private Material sheetSurvived;
+    [Tooltip("Hoja halftone animada de fondo (se crea en runtime). Desmarcar para la pantalla clásica.")]
+    [SerializeField] private bool sheetFx = true;
+
+    private EndScreenSheetFx fx;
+
     // Estado de "esperando pulsación": activo mientras la pantalla está visible tras la gracia.
     private bool waitingForInput;
     private float shownAtUnscaled;
@@ -58,6 +72,23 @@ public class EndScreen : MonoBehaviour
         // El panel del placeholder se oculta por CanvasGroup (alpha 0); si no se cableó, resuélvelo.
         if (panelGroup == null && panelRoot != null) panelGroup = panelRoot.GetComponent<CanvasGroup>();
         SetVisible(false);   // oculto hasta el final de la partida
+
+        if (promptText == null && panelRoot != null)
+        {
+            Transform p = panelRoot.transform.Find("Prompt");
+            if (p != null) promptText = p.GetComponent<TMP_Text>();
+        }
+
+        // Tipografía retro unificada (tmp.font = asset elige solo el material por defecto de la fuente).
+        if (retroFont != null)
+        {
+            if (title != null) title.font = retroFont;
+            if (scoreText != null) scoreText.font = retroFont;
+            if (promptText != null) promptText.font = retroFont;
+        }
+
+        if (sheetFx && panelRoot != null)
+            fx = EndScreenSheetFx.Create((RectTransform)panelRoot.transform);
     }
 
     private void OnEnable()
@@ -99,6 +130,9 @@ public class EndScreen : MonoBehaviour
         if (title != null) { title.text = style.title; title.color = style.color; }
         if (subtitle != null) subtitle.text = style.subtitle;
         if (scoreText != null) scoreText.text = string.Format(scoreFormat, result.Score);
+
+        // Hoja halftone del desenlace (las tres son oscuras: la tinta clara de la escena vale siempre).
+        if (fx != null) fx.Apply(SheetFor(result.Outcome));
 
         SetVisible(true);
 
@@ -164,6 +198,17 @@ public class EndScreen : MonoBehaviour
         else if (panelRoot != null)
         {
             panelRoot.SetActive(visible);
+        }
+    }
+
+    private Material SheetFor(MatchController.MatchOutcome outcome)
+    {
+        switch (outcome)
+        {
+            case MatchController.MatchOutcome.Victory: return sheetVictory;
+            case MatchController.MatchOutcome.Death: return sheetDeath;
+            case MatchController.MatchOutcome.Survived: return sheetSurvived;
+            default: return null;
         }
     }
 
