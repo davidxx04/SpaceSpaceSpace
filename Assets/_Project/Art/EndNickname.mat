@@ -19,7 +19,7 @@ Material:
   m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
-  m_LockedProperties:
+  m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -30,22 +30,34 @@ Material:
     m_Ints: []
     m_Floats:
     - _CellSize: 5
+    - _ColorMask: 15
     - _CornerRadius: 0.3
     - _DotJitter: 0.35
     - _FieldScale: 2.8
-    - _FieldSpeed: 0.1
+    - _FieldSpeed: 0.03
     - _Gain: 1.8
     - _GrainStrength: 0.07
     - _HaloAmount: 0
     - _MaxDot: 0.85
-    - _MorphSpeed: 0.3
-    - _SheetOpacity: 0.93
-    - _Threshold: 0.45
+    - _MorphSpeed: 0.9
+    - _SheetOpacity: 1
+    - _Stencil: 0
+    - _StencilComp: 8
+    - _StencilOp: 0
+    - _StencilReadMask: 255
+    - _StencilWriteMask: 255
+    - _SwirlAmount: 0.04
+    - _SwirlSpeed: 0.4
+    - _Threshold: 0.338
+    - _UnscaledTime: 0
+    - _UseUIAlphaClip: 0
     - _Vignette: 0.35
     - _WarpAmount: 0.9
     m_Colors:
     - _BgColor: {r: 0.015, g: 0.017, b: 0.026, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _DotDeep: {r: 0.07, g: 0.08, b: 0.12, a: 1}
     - _DotHot: {r: 0.42, g: 0.48, b: 0.6, a: 1}
     - _DotMid: {r: 0.2, g: 0.24, b: 0.34, a: 1}
+    - _Size: {r: 800, g: 600, b: 0, a: 0}
   m_BuildTextureStacks: []

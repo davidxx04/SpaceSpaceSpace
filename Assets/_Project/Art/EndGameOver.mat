@@ -33,16 +33,18 @@ Material:
     - _CornerRadius: 0.35
     - _DotJitter: 0.25
     - _FieldScale: 2.2
-    - _FieldSpeed: 0.1
+    - _FieldSpeed: 0.04
     - _Gain: 2.6
     - _GrainStrength: 0.1
     - _HaloAmount: 0.2
     - _MaxDot: 0.94
-    - _MorphSpeed: 0.3
+    - _MorphSpeed: 1.4
     - _SheetOpacity: 0.95
+    - _SwirlAmount: 0.05
+    - _SwirlSpeed: 0.45
     - _Threshold: 0.42
     - _Vignette: 0.3
-    - _WarpAmount: 0.8
+    - _WarpAmount: 1
     m_Colors:
     - _BgColor: {r: 0.01, g: 0.011, b: 0.024, a: 1}
     - _DotDeep: {r: 0.35, g: 0.06, b: 0.08, a: 1}

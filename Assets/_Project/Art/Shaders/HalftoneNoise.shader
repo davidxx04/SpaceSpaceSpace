@@ -29,10 +29,13 @@ Shader "SpaceSpaceSpace/HalftoneNoise"
         _CornerRadius ("Radio de esquina (fraccion)", Range(0, 0.5)) = 0.32
         _DotJitter ("Jitter de tamano por celda", Range(0, 1)) = 0.3
 
+        // OJO: los 4 materiales .mat SOBREESCRIBEN estos defaults — tunea en el material, no aquí.
         [Header(Campo de ruido)]
         _FieldScale ("Escala del campo", Float) = 2.5
-        _FieldSpeed ("Velocidad de deriva", Float) = 2000.60
-        _MorphSpeed ("Velocidad de morph (formas)", Float) = 2000.35
+        _FieldSpeed ("Velocidad de deriva", Float) = 0.04
+        _MorphSpeed ("Velocidad de morph (formas)", Float) = 1.6
+        _SwirlAmount ("Orbita de deriva (radio)", Float) = 0.05
+        _SwirlSpeed ("Velocidad de orbita (rad/s)", Float) = 0.5
         _WarpAmount ("Warp del dominio", Range(0, 2)) = 0.9
         _Threshold ("Umbral (bajo esto no hay punto)", Range(0, 1)) = 0.42
         _Gain ("Ganancia tras umbral", Float) = 2.4
@@ -45,7 +48,7 @@ Shader "SpaceSpaceSpace/HalftoneNoise"
 
         [Header(Acabado)]
         _GrainStrength ("Grano", Range(0, 0.35)) = 0.1
-        _Vignette ("Vineta", Range(0, 1)) = 2.3
+        _Vignette ("Vineta", Range(0, 1)) = 0.3
 
         _Size ("Rect Size px (auto)", Vector) = (800, 600, 0, 0)
         _UnscaledTime ("Unscaled Time (auto)", Float) = 0
@@ -121,7 +124,8 @@ Shader "SpaceSpaceSpace/HalftoneNoise"
             fixed4 _Color, _BgColor;
             float _SheetOpacity;
             float _CellSize, _MaxDot, _CornerRadius, _DotJitter;
-            float _FieldScale, _FieldSpeed, _MorphSpeed, _WarpAmount, _Threshold, _Gain;
+            float _FieldScale, _FieldSpeed, _MorphSpeed, _SwirlAmount, _SwirlSpeed, _Threshold, _Gain;
+            float _WarpAmount;
             fixed4 _DotDeep, _DotMid, _DotHot;
             float _HaloAmount;
             float _GrainStrength, _Vignette;
@@ -191,7 +195,11 @@ Shader "SpaceSpaceSpace/HalftoneNoise"
             // forma continuamente (el "efecto aleatorio" de la referencia).
             float fieldAt(float2 px2, float t)
             {
-                float2 q = px2 / max(_Size.y, 1.0) * _FieldScale + t * _FieldSpeed * float2(0.31, -0.17);
+                // Deriva lineal + ÓRBITA (Lissajous: frecuencias x/y distintas) -> el patrón nunca
+                // se mueve "solo hacia un lado": vaivén circular continuo en todas direcciones.
+                float2 drift = t * _FieldSpeed * float2(0.31, -0.17)
+                             + _SwirlAmount * float2(cos(t * _SwirlSpeed), sin(t * _SwirlSpeed * 0.83));
+                float2 q = px2 / max(_Size.y, 1.0) * _FieldScale + drift;
                 float2 w = float2(fbm3(q + float2(2.7, 9.1) + t * _MorphSpeed * float2(-0.23, 0.11)),
                                   fbm3(q + float2(8.3, 1.9) + t * _MorphSpeed * float2(0.17, 0.29)));
                 float n = fbm3(q + _WarpAmount * (w - 0.5));
