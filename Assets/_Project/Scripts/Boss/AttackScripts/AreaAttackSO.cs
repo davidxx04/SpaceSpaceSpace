@@ -70,7 +70,7 @@ public class AreaAttackSO : BossAttackSO
         BossArea area = ctx.SpawnArea(pos);
         if (area == null) { yield return Recover(); yield break; }
 
-        area.Configure(finalSize, WithAlpha(parryable ? parryColor : dodgeColor, alpha), fillVertical);
+        area.Configure(finalSize, WithAlpha(parryable ? parryColor : dodgeColor, alpha), fillVertical, parryable);
         area.transform.rotation = rot;
 
         // (1) prep neutro. telegraphSeconds = retardo antes de empezar el relleno (0 = inmediato).

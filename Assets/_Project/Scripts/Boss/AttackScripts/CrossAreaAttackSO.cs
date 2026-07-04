@@ -47,8 +47,8 @@ public class CrossAreaAttackSO : BossAttackSO
         }
 
         Color fillC = WithAlpha(dodgeColor, alpha);
-        barH.Configure(new Vector2(w, thickness), fillC, true);    // rellena por Y (sube)
-        barV.Configure(new Vector2(thickness, h), fillC, false);   // rellena por X
+        barH.Configure(new Vector2(w, thickness), fillC, true, parryable);    // barrido por Y (sube)
+        barV.Configure(new Vector2(thickness, h), fillC, false, parryable);   // barrido por X
 
         // (1) prep (telegraphSeconds heredado; 0 = relleno inmediato).
         if (telegraphSeconds > 0f) yield return new WaitForSeconds(telegraphSeconds);

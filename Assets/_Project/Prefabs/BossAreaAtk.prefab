@@ -141,3 +141,4 @@ MonoBehaviour:
   hitbox: {fileID: 9192724328425121409}
   prepColor: {r: 1, g: 1, b: 1, a: 0.15}
   sortingOrder: -5
+  castMaterialAsset: {fileID: 2100000, guid: 3b8d1f6a2c9e4d7fb05e1a8c6d4f2e90, type: 2}

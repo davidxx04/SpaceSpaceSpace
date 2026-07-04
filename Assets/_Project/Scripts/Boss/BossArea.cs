@@ -1,12 +1,14 @@
 using UnityEngine;
 
-// Área de ataque del boss: zona rectangular POOLEADA con telegrafía de barra de relleno (§10.2/§12).
-// Crea su visual procedural (quad 'prep' neutro + quad de 'relleno' que crece 0->1 anclado al borde
-// negativo del eje elegido + glow additive opcional) y conduce un Hitbox hijo para el golpe.
-// La dirige un BossAttackSO:
-//   Configure -> [SetSize / posición / rotación cada frame si sigue] -> SetFill(0..1)
-//   -> SetColor(impacto) -> ActivateHitbox/Deactivate -> despawn.
-// El color del relleno lleva el verbo (rojo=esquiva / cian=parry); el 'prep' es neutro y común.
+// Área de ataque del boss: zona rectangular POOLEADA con telegrafía de "cast" (§10.2/§12).
+// Crea su visual procedural (quad 'prep' neutro + quad 'fill' a tamaño completo con el shader
+// AreaCast: anillos cuadrados de puntos que nacen en el centro y tocan las 4 paredes exactamente
+// al impacto, más una línea de barrido que cruza el eje elegido con el mismo reloj + glow additive
+// opcional) y conduce un Hitbox hijo para el golpe. La dirige un BossAttackSO:
+//   Configure -> [SetSize / posición / rotación cada frame si sigue] -> SetFill(0..1 = _Progress)
+//   -> SetColor(impacto = losa sólida) -> ActivateHitbox/Deactivate -> despawn.
+// El verbo va por paleta del shader (cálida=esquiva / fría=parry, elegida en Configure); el 'prep'
+// es neutro y común. Si el shader faltara, degrada al wipe clásico (la telegrafía sigue jugable).
 [DisallowMultipleComponent]
 public class BossArea : MonoBehaviour, IPoolable
 {
@@ -29,6 +31,12 @@ public class BossArea : MonoBehaviour, IPoolable
     [Tooltip("Intensidad/alpha del halo additive.")]
     [SerializeField] private float glowIntensity = 0.6f;
 
+    [Header("Cast (telegrafía de anillos)")]
+    [Tooltip("Material del shader AreaCast para tunear el look en el Inspector (tamaño/densidad de " +
+             "puntos, colores de fondo y rampas, anillos, barrido). Editable en Play y persiste. " +
+             "Vacío = se crea uno por código con los defaults del shader.")]
+    [SerializeField] private Material castMaterialAsset;
+
     private SpriteRenderer prep;   // fondo neutro
     private SpriteRenderer fill;   // relleno (lleva el color de verbo / de impacto)
     private SpriteRenderer glow;   // halo additive opcional
@@ -38,32 +46,67 @@ public class BossArea : MonoBehaviour, IPoolable
     private float fillT;
     private Color currentColor = Color.red;
 
+    // Cast procedural (AreaCast): estado por instancia empujado por MaterialPropertyBlock.
+    private MaterialPropertyBlock mpb;
+    private bool useCast;
+
+    private static readonly int ProgressId = Shader.PropertyToID("_Progress");
+    private static readonly int SweepAxisId = Shader.PropertyToID("_SweepAxis");
+    private static readonly int PaletteId = Shader.PropertyToID("_Palette");
+    private static readonly int FlashId = Shader.PropertyToID("_Flash");
+    private static readonly int QuadSizeId = Shader.PropertyToID("_QuadSize");
+    private static readonly int SeedId = Shader.PropertyToID("_Seed");
+
     private static Material glowMaterial;
+    private static Material castMaterial;
 
     private void Awake()
     {
+        Material cast = ResolveCastMaterial();
         if (prep == null) prep = CreateQuad("AreaPrep", sortingOrder, null);
-        if (fill == null) fill = CreateQuad("AreaFill", sortingOrder + 1, null);
+        if (fill == null) fill = CreateQuad("AreaFill", sortingOrder + 1, cast);
         if (useGlow && glow == null)
         {
             Material m = GetGlowMaterial();
             if (m != null) glow = CreateQuad("AreaGlow", sortingOrder - 1, m);
         }
         prep.color = prepColor;
+        useCast = cast != null;
+        mpb = new MaterialPropertyBlock();
     }
 
-    // Prepara el área para un disparo: eje del relleno, tamaño, color de verbo; relleno a 0, hitbox off.
-    // NO toca la rotación (la fijan los beams desde el SO); el reset al pool va en OnDespawned.
-    public void Configure(Vector2 areaSize, Color verbColor, bool fillVertical)
+    // Prepara el área para un disparo: eje del barrido, tamaño, color de verbo y paleta del cast
+    // (cálida = esquiva, fría = parry); progreso a 0, hitbox off. NO toca la rotación (la fijan
+    // los beams desde el SO); el reset al pool va en OnDespawned.
+    public void Configure(Vector2 areaSize, Color verbColor, bool fillVertical, bool coldPalette)
     {
         fillOnY = fillVertical;
         currentColor = verbColor;
 
         ApplySize(areaSize);
-        if (fill != null) fill.color = verbColor;
-        if (prep != null) prep.color = prepColor;
+        if (fill != null)
+        {
+            // Con cast, el matiz de verbo vive en la rampa del shader; el vertex color lleva solo
+            // el alpha maestro del SO (mismo criterio que BossSwoosh.BeginBody).
+            fill.color = useCast ? new Color(1f, 1f, 1f, verbColor.a) : verbColor;
+        }
+        // Con cast, el fondo del área lo pinta el shader (azul/rojo oscuro por verbo) y el prep
+        // gris se oculta; el prep solo actúa en el fallback sin shader.
+        if (prep != null) prep.color = useCast ? Color.clear : prepColor;
         ApplyGlowColor();
         if (hitbox != null) hitbox.Deactivate();
+
+        if (useCast && fill != null)
+        {
+            // Reset COMPLETO del MPB: instancia reusada del pool.
+            mpb.SetFloat(ProgressId, 0f);
+            mpb.SetFloat(SweepAxisId, fillVertical ? 1f : 0f);
+            mpb.SetFloat(PaletteId, coldPalette ? 1f : 0f);
+            mpb.SetFloat(FlashId, 0f);
+            mpb.SetFloat(SeedId, Random.Range(0f, 100f));
+            mpb.SetVector(QuadSizeId, size);
+            fill.SetPropertyBlock(mpb);
+        }
 
         SetFill(0f);
     }
@@ -75,11 +118,19 @@ public class BossArea : MonoBehaviour, IPoolable
         SetFill(fillT);   // re-aplica el relleno con el nuevo tamaño
     }
 
-    // Progreso del relleno 0..1: ES el reloj de la telegrafía. Crece anclado al borde negativo del eje.
+    // Progreso 0..1: ES el reloj de la telegrafía. Con cast, empuja _Progress (los anillos nacen
+    // en el centro y el líder toca las 4 paredes exactamente a 1). Sin shader, el wipe clásico.
     public void SetFill(float t01)
     {
         fillT = Mathf.Clamp01(t01);
         if (fill == null) return;
+
+        if (useCast)
+        {
+            mpb.SetFloat(ProgressId, fillT);
+            fill.SetPropertyBlock(mpb);
+            return;
+        }
 
         if (fillOnY)
         {
@@ -93,12 +144,20 @@ public class BossArea : MonoBehaviour, IPoolable
         }
     }
 
-    // Recolorea el relleno (p. ej. al impacto) y el glow.
+    // Recolorea el relleno y el glow. Los SO lo llaman AL IMPACTO: con cast además enciende _Flash,
+    // que funde los anillos a losa SÓLIDA (blanco x vertex rgb = impactColor) — la zona de daño
+    // se lee inequívoca durante impactSeconds.
     public void SetColor(Color c)
     {
         currentColor = c;
         if (fill != null) fill.color = c;
         ApplyGlowColor();
+
+        if (useCast && fill != null)
+        {
+            mpb.SetFloat(FlashId, 1f);
+            fill.SetPropertyBlock(mpb);
+        }
     }
 
     public void ActivateHitbox(DamageInfo info)
@@ -113,10 +172,16 @@ public class BossArea : MonoBehaviour, IPoolable
 
     public void OnSpawned() { }
 
-    // Reset al volver al pool: rotación a identidad (los beams la rotan), relleno a 0, hitbox off.
+    // Reset al volver al pool: rotación a identidad (los beams la rotan), progreso/flash a 0, hitbox off.
     public void OnDespawned()
     {
         transform.rotation = Quaternion.identity;
+        if (useCast && fill != null && mpb != null)
+        {
+            mpb.SetFloat(FlashId, 0f);
+            mpb.SetFloat(ProgressId, 0f);
+            fill.SetPropertyBlock(mpb);
+        }
         SetFill(0f);
         DeactivateHitbox();
     }
@@ -127,6 +192,20 @@ public class BossArea : MonoBehaviour, IPoolable
         if (prep != null) prep.transform.localScale = size;
         if (hitbox != null) hitbox.SetBoxSize(size);
         if (glow != null) glow.transform.localScale = size * Mathf.Max(0.01f, glowScale);
+
+        // Con cast, el quad de relleno cubre SIEMPRE el área completa (el "llenado" lo pinta el
+        // shader) y necesita el tamaño en mundo para que los puntos salgan redondos y con espaciado
+        // uniforme aunque el rect cambie en vivo (beams con trackPlayer via SetSize).
+        if (useCast && fill != null)
+        {
+            fill.transform.localScale = new Vector3(size.x, size.y, 1f);
+            fill.transform.localPosition = Vector3.zero;
+            if (mpb != null)
+            {
+                mpb.SetVector(QuadSizeId, size);
+                fill.SetPropertyBlock(mpb);
+            }
+        }
     }
 
     private void ApplyGlowColor()
@@ -155,5 +234,25 @@ public class BossArea : MonoBehaviour, IPoolable
             if (s != null) glowMaterial = new Material(s) { name = "AreaGlow (auto)" };
         }
         return glowMaterial;
+    }
+
+    // Material del cast (anillos de puntos + barrido). Preferimos el ASSET serializado (AreaCast.mat)
+    // para tunear el look desde el Inspector y que persista; si no hay asset, se crea uno por código
+    // con los defaults del shader. Cacheado static -> compartido por todas las áreas (lo per-instancia
+    // va por MaterialPropertyBlock; el asset se usa como sharedMaterial, nunca se instancia -> sin
+    // fugas). Si ni asset ni shader están, useCast queda a false y SetFill degrada al wipe clásico.
+    private Material ResolveCastMaterial()
+    {
+        if (castMaterial != null) return castMaterial;
+
+        if (castMaterialAsset != null)
+        {
+            castMaterial = castMaterialAsset;
+            return castMaterial;
+        }
+
+        Shader s = Shader.Find("SpaceSpaceSpace/AreaCast");
+        if (s != null) castMaterial = new Material(s) { name = "AreaCast (auto)" };
+        return castMaterial;
     }
 }
