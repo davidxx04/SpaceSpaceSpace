@@ -161,6 +161,11 @@ public static class HudBuilder
 
         BuildTimer("HUD_Timer", canvas, timer);
 
+        // El HUD se oculta al terminar la partida (pantalla final / nickname): vista que escucha
+        // MatchEnded. RequireComponent añade el CanvasGroup por el que se hace el fundido.
+        var hudVisibility = Ensure<HudVisibility>(canvas.gameObject);
+        SetRef(hudVisibility, "match", match);
+
         EditorSceneManager.MarkSceneDirty(player.gameObject.scene);
         Debug.Log($"[HUD] HUD '{style.Id}' montado, limpiado y cableado. Revisa la consola por si hay refs sin fuente y guarda (Ctrl+S).");
     }
