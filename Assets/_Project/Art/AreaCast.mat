@@ -19,33 +19,33 @@ Material:
   m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
-  m_LockedProperties:
+  m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _BgOpacity: 0.6
-    - _DotRadius: 0.12
+    - _BgOpacity: 0.124
+    - _DotRadius: 0.339
     - _DotSoft: 0.1
-    - _DotSpacing: 0.08
+    - _DotSpacing: 0.05
     - _DotVariation: 0.35
-    - _FieldFaint: 0.05
+    - _FieldFaint: 0.3
     - _Flash: 0
-    - _LeadBoost: 1.6
-    - _LeadWidth: 0.05
+    - _LeadBoost: 1.03
+    - _LeadWidth: 0.028
     - _Palette: 0
     - _Progress: 0
-    - _RingCount: 5
+    - _RingCount: 10
     - _RingWidth: 0.18
     - _Seed: 0
     - _SweepAxis: 1
-    - _SweepBoost: 0.8
-    - _SweepDisplace: 0.07
-    - _SweepFaint: 0.35
-    - _SweepWidth: 0.18
-    - _SweepWobbleFreq: 9
-    - _TrailFade: 0.45
+    - _SweepBoost: 0.79
+    - _SweepDisplace: 0.12
+    - _SweepFaint: 0
+    - _SweepWidth: 0.6
+    - _SweepWobbleFreq: 7.41
+    - _TrailFade: 0.486
     m_Colors:
     - _BgCold: {r: 0.12, g: 0.13, b: 0.45, a: 1}
     - _BgWarm: {r: 0.32, g: 0.05, b: 0.06, a: 1}
