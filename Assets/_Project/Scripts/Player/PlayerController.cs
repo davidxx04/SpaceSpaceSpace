@@ -53,6 +53,13 @@ public class PlayerController : MonoBehaviour
     // Lado actual de la nave (izquierda/derecha); solo se actualiza con intención horizontal real.
     private bool shipFacingLeft;
 
+    // --- Giro visual de la nave durante el parry (flourish) ---
+    private bool shipSpinning;         // true mientras dura la acción de parry (ParryState.Enter/Exit)
+    private float shipSpinAngle;       // ángulo libre acumulado mientras gira (sin envolver)
+    private bool shipStabilizing;      // true mientras se asienta hacia el aim real tras el giro
+    private float stabilizeElapsed;
+    private float stabilizeFromAngle;
+
     // --- Recoil al disparar ---
     private Vector3 shipBaseLocalPos;   // posición local "en reposo" del sprite de la nave
     private Vector3 recoilOffset;       // desplazamiento visual actual del sprite (modo visual)
@@ -232,6 +239,27 @@ public class PlayerController : MonoBehaviour
         if (StateMachine.Current == ParryState) ParryState.RegisterSuccess();
     }
 
+    // Arranca el giro visual (flourish) de la nave durante el parry. Lo llama ParryState.Enter().
+    // Semilla el ángulo libre desde el que ya se está renderizando (spin o aim real, da igual) para
+    // que el giro nunca dé un salto, ni siquiera al encadenar un re-parry (Exit()+Enter() ocurren en
+    // el mismo frame, antes de que UpdateAim vuelva a leer el ángulo).
+    public void BeginShipSpin()
+    {
+        shipStabilizing = false;
+        shipSpinning = true;
+        if (shipSprite != null) shipSpinAngle = shipSprite.transform.eulerAngles.z;
+    }
+
+    // Termina el giro y arranca el asentamiento suave hacia el aim real. Lo llama ParryState.Exit(),
+    // que se dispara tanto si el parry termina solo como si se cancela por otra acción.
+    public void EndShipSpin()
+    {
+        shipSpinning = false;
+        shipStabilizing = true;
+        stabilizeElapsed = 0f;
+        stabilizeFromAngle = shipSpinAngle;
+    }
+
     // Lo llama PlayerDamageReceiver al recibir daño REAL. Si el arma en curso lo permite
     // (interruptOnHit), cancela el disparo (vuelve a locomoción) para que no puedas spamear
     // disparos estáticos encajando golpes. Consume el mantenido para que el auto-fire no reanude solo.
@@ -294,13 +322,38 @@ public class PlayerController : MonoBehaviour
         // conserva el último lado (la nave mira "como si viniera" de ese lado).
         if (shipSprite != null)
         {
-            shipSprite.transform.rotation = Quaternion.Euler(0f, 0f, angle);
+            float shipAngle = ResolveShipAngle(angle);
+            shipSprite.transform.rotation = Quaternion.Euler(0f, 0f, shipAngle);
             if (Mathf.Abs(AimDirection.x) > 0.1f)
             {
                 shipFacingLeft = AimDirection.x < 0f;
             }
             shipSprite.flipY = shipFacingLeft;
         }
+    }
+
+    // Resuelve el ángulo de la nave: giro libre mientras dura el parry, asentamiento suave hacia
+    // el aim real al terminar/cancelarse, o el aim real directo el resto del tiempo.
+    private float ResolveShipAngle(float aimAngle)
+    {
+        if (shipSpinning)
+        {
+            shipSpinAngle += parryData.spinSpeed * Time.deltaTime;
+            return shipSpinAngle;
+        }
+
+        if (shipStabilizing)
+        {
+            stabilizeElapsed += Time.deltaTime;
+            float t = parryData.stabilizeDuration > 0f
+                ? Mathf.Clamp01(stabilizeElapsed / parryData.stabilizeDuration)
+                : 1f;
+            float eased = parryData.stabilizeCurve.Evaluate(t);
+            if (t >= 1f) shipStabilizing = false;
+            return Mathf.LerpAngle(stabilizeFromAngle, aimAngle, eased);
+        }
+
+        return aimAngle;
     }
 
     // Recoil visual: el sprite "rebota" hacia atrás y vuelve a su posición de reposo.

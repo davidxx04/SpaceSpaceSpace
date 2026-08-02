@@ -40,7 +40,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   iFrameStart: 0
   iFrameEnd: 0
-  cooldown: 0.4
-  cancelWindow: 0.275
+  cooldown: 0.15
+  cancelWindow: 0.22
   vfxPrefab: {fileID: 0}
   afterimage: {fileID: 11400000, guid: 8d6f4b484fb4e3c42b83811d562dd83e, type: 2}

@@ -33,4 +33,16 @@ public class ParryData : ScriptableObject
 
     [Tooltip("VFX opcional a instanciar al parrear (sin uso obligatorio).")]
     public GameObject vfxPrefab;
+
+    [Header("Giro visual (flourish)")]
+    [Tooltip("Velocidad angular del giro de la nave durante el parry, en grados/seg. " +
+             "El signo fija el sentido de giro (siempre el mismo). 0 = sin giro.")]
+    public float spinSpeed = 1080f;
+
+    [Tooltip("Tiempo para asentar suavemente la nave en su ángulo real de apuntado al " +
+             "terminar o cancelarse el parry, en segundos.")]
+    public float stabilizeDuration = 0.12f;
+
+    [Tooltip("Curva de easing del asentamiento (0..1 -> 0..1).")]
+    public AnimationCurve stabilizeCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 }

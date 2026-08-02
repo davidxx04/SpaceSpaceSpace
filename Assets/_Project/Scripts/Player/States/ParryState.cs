@@ -30,6 +30,7 @@ public class ParryState : IPlayerState
         elapsed = 0f;
         landed = false;
         player.NextParryTime = Time.time + data.cooldown;
+        player.BeginShipSpin();
 
         if (data.vfxPrefab != null)
         {
@@ -77,5 +78,6 @@ public class ParryState : IPlayerState
     public void Exit()
     {
         player.IsParrying = false;
+        player.EndShipSpin();
     }
 }
