@@ -13,7 +13,7 @@ public class ParryAura : MonoBehaviour
 {
     [SerializeField] private PlayerController player;
     [SerializeField] private PlayerDamageReceiver receiver;
-    [SerializeField] private Color color = Color.yellow;
+    [SerializeField] private Color color = new Color(0.35f, 0.62f, 1f, 1f);   // azul
     [SerializeField] private float startScale = 1.5f;
 
     [Tooltip("Escala del anillo a lo largo de la ventana (0 = recién abierta -> 1; 1 = a punto de cerrar -> 0).")]
@@ -25,6 +25,7 @@ public class ParryAura : MonoBehaviour
     private void Awake()
     {
         sr = GetComponent<SpriteRenderer>();
+        sr.sprite = PrimitiveShield.Unit;   // forma de escudo procedural (ignora el sprite del Inspector)
         if (player == null) player = GetComponentInParent<PlayerController>();
         if (receiver == null) receiver = GetComponentInParent<PlayerDamageReceiver>();
         sr.enabled = false;
