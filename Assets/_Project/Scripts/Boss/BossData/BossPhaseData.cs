@@ -51,4 +51,11 @@ public class BossPhaseData : ScriptableObject
 
     [Tooltip("Tuning de movimiento para esta fase (opcional).")]
     public BossMovementData movement;
+
+    [Header("Ritmo de combo")]
+    [Range(0.25f, 1f)]
+    [Tooltip("Escala del tiempo ENTRE primitivas de los combos (delayAfter y launchInterval). " +
+             "1 = normal; 0.75 = los combos van al 75% del tiempo (más rápidos). Solo afecta a los " +
+             "huecos internos del combo, no a la duración de cada primitiva.")]
+    public float comboDelayScale = 1f;
 }

@@ -78,6 +78,10 @@ public class BossAttackDirector : MonoBehaviour
     {
         if (combo == null || combo.sequence == null) { yield return null; yield break; }
 
+        // Escala de los tiempos ENTRE primitivas (perilla por fase; p.ej. fase 4 a 0.75 = más rápido).
+        // El guard '> 0f' hace que las fases sin el campo (assets viejos) sigan a 1x (nunca 0 = instantáneo).
+        float scale = (phase != null && phase.comboDelayScale > 0f) ? phase.comboDelayScale : 1f;
+
         Coroutine pending = null;
 
         foreach (BossComboSO.Step step in combo.sequence)
@@ -85,13 +89,13 @@ public class BossAttackDirector : MonoBehaviour
             if (step.launchInterval > 0f)
             {
                 pending = StartCoroutine(RunAttack(step.attack));
-                yield return new WaitForSeconds(step.launchInterval);
+                yield return new WaitForSeconds(step.launchInterval * scale);
             }
             else
             {
                 if (pending != null) { yield return pending; pending = null; }
                 yield return RunAttack(step.attack);
-                if (step.delayAfter > 0f) yield return new WaitForSeconds(step.delayAfter);
+                if (step.delayAfter > 0f) yield return new WaitForSeconds(step.delayAfter * scale);
             }
         }
 
