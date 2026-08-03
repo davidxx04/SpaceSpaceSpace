@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: phase3
   m_EditorClassIdentifier:
   id: phase3_frenzy
-  enterAtHealthFraction: 0.15
+  enterAtHealthFraction: 0.2
   useCombos: 1
   singles:
   - {fileID: 11400000, guid: 0e7e976c06b282f4ca103b386b9abd7a, type: 2}

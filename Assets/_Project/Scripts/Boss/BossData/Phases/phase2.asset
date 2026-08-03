@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: phase2
   m_EditorClassIdentifier:
   id: phase2_combos
-  enterAtHealthFraction: 0.5
+  enterAtHealthFraction: 0.85
   useCombos: 1
   singles:
   - {fileID: 11400000, guid: 0e7e976c06b282f4ca103b386b9abd7a, type: 2}
@@ -40,6 +40,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 4d6e8fa01b2c5476890112aabbccddf1, type: 2}
   - {fileID: 11400000, guid: e0a4c6d8f2135791df468ace02357914, type: 2}
   - {fileID: 11400000, guid: f217e819b126494baa2e238a23459ffe, type: 2}
+  - {fileID: 11400000, guid: 077072763ebe4cf7a67a1e9afd046297, type: 2}
   singleSelection: 2
   comboSelection: 0
   comboChance: 0.5
