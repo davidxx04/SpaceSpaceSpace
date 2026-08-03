@@ -1388,6 +1388,9 @@ MonoBehaviour:
   - prefab: {fileID: 5600000000000000001, guid: 6f708192a3b4c5d6e7f809192a3b4c5d, type: 3}
     prewarm: 10
     maxSize: 100
+  - prefab: {fileID: 5700000000000000001, guid: 6b7f85f85c394f7399ae0fdfa535debe, type: 3}
+    prewarm: 10
+    maxSize: 100
 --- !u!4 &661115854
 Transform:
   m_ObjectHideFlags: 0

@@ -28,6 +28,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f618304b0c5d7f9396f8092a4b6d8fa3, type: 2}
   - {fileID: 11400000, guid: 1a3b5c7d9e0f2143658799aabbccddee, type: 2}
   - {fileID: 11400000, guid: c8e2a4b6d0f13579bd24680ace135792, type: 2}
+  - {fileID: 11400000, guid: f09a0346a2e04014a52a2b0378d6d54d, type: 2}
+  - {fileID: 11400000, guid: b367c700260c425d9e16d811ad540408, type: 2}
+  - {fileID: 11400000, guid: 7877c50e1c9643d9837700e2e2ccce07, type: 2}
   combos:
   - {fileID: 11400000, guid: 1a2b3c4d5e6f70819a2b3c4d5e6f7081, type: 2}
   - {fileID: 11400000, guid: 2b3c4d5e6f708192a3b4c5d6e7f80919, type: 2}
@@ -36,6 +39,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 3c5d7e9f0a1b4365789001aabbccddf0, type: 2}
   - {fileID: 11400000, guid: 4d6e8fa01b2c5476890112aabbccddf1, type: 2}
   - {fileID: 11400000, guid: e0a4c6d8f2135791df468ace02357914, type: 2}
+  - {fileID: 11400000, guid: f217e819b126494baa2e238a23459ffe, type: 2}
   singleSelection: 2
   comboSelection: 0
   comboChance: 0.5

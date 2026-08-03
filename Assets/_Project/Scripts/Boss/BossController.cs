@@ -20,6 +20,8 @@ public class BossController : MonoBehaviour, IParryable
     [SerializeField] private Projectile parryableBossProjectile; // bala PARREABLE (cian); opcional
     [SerializeField] private BossArea bossArea;                  // prefab del área (zona telegrafiada); opcional
     [SerializeField] private BossSwoosh bossSwoosh;              // prefab del swoosh (barra que barre); opcional
+    [Tooltip("Variante pequeña del swoosh (rastro más fino); opcional. Vacío = SwooshAttackSO.smallVariant cae al swoosh normal.")]
+    [SerializeField] private BossSwoosh smallBossSwoosh;
 
     [Header("Fases (ORDENADAS de más vida a menos: enterAtHealthFraction 1.0, 0.66, 0.33...)")]
     [SerializeField] private BossPhaseData[] phases;
@@ -30,6 +32,11 @@ public class BossController : MonoBehaviour, IParryable
 
     [Tooltip("Parries seguidos necesarios para romper la postura y entrar en Stagger.")]
     [SerializeField] private int staggerParryThreshold = 6;
+
+    [Tooltip("Si está desmarcado, acumular parries NO fuerza Stagger (la postura se sigue contando, " +
+             "pero nunca transiciona) -> ningún combo/ataque se interrumpe por parry. Desactivado a " +
+             "petición: este mecanismo no se está usando por ahora; el flag lo deja reversible sin código.")]
+    [SerializeField] private bool staggerOnParryEnabled = false;
 
     [Tooltip("Duración del Stagger (ventana de castigo), en segundos.")]
     [SerializeField] private float staggerSeconds = 2.5f;
@@ -83,6 +90,7 @@ public class BossController : MonoBehaviour, IParryable
             ParryableProjectilePrefab = parryableBossProjectile,
             AreaPrefab = bossArea,
             SwooshPrefab = bossSwoosh,
+            SmallSwooshPrefab = smallBossSwoosh,
             Movement = movement,
         };
 
@@ -121,7 +129,7 @@ public class BossController : MonoBehaviour, IParryable
     public void OnParried()
     {
         posture++;
-        if (posture >= staggerParryThreshold && StateMachine.Current == CombatState)
+        if (staggerOnParryEnabled && posture >= staggerParryThreshold && StateMachine.Current == CombatState)
         {
             StateMachine.ChangeState(StaggerState);
         }
@@ -149,6 +157,7 @@ public class BossController : MonoBehaviour, IParryable
         PoolManager.ReleaseActive(parryableBossProjectile);
         PoolManager.ReleaseActive(bossArea);
         PoolManager.ReleaseActive(bossSwoosh);
+        PoolManager.ReleaseActive(smallBossSwoosh);
     }
 
     private void OnCoreDamaged(DamageInfo _) => UpdatePhase();

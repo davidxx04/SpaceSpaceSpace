@@ -23,10 +23,18 @@ public class BossComboSO : ScriptableObject
     public struct Step
     {
         public BossAttackSO attack;
-        [Tooltip("Espera tras este ataque antes del siguiente, en segundos.")]
+
+        [Tooltip("Espera tras este ataque antes del siguiente, en segundos. Se ignora si 'launchInterval' > 0.")]
         public float delayAfter;
+
+        [Tooltip("Si > 0, el SIGUIENTE paso se lanza este tiempo después de INICIAR este ataque (no tras " +
+                 "que termine) -> permite ataques solapados/concurrentes (p.ej. varios swooshes en pantalla " +
+                 "a la vez). 0 = comportamiento clásico: espera a que este ataque termine del todo " +
+                 "(telegraph+activo+recovery) y LUEGO aplica 'delayAfter'.")]
+        public float launchInterval;
     }
 
-    [Tooltip("Ataques en ORDEN. Se ejecutan uno tras otro (esperando 'delayAfter' entre cada uno).")]
+    [Tooltip("Ataques en ORDEN. Se ejecutan uno tras otro (esperando 'delayAfter' entre cada uno), salvo " +
+             "que un paso use 'launchInterval' para solaparse con el siguiente.")]
     public Step[] sequence;
 }

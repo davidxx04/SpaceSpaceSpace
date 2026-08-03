@@ -10,14 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 00f11e3f1a73d1f49a544d89d66eaa50, type: 3}
-  m_Name: combo_A
+  m_Name: combo_H
   m_EditorClassIdentifier:
-  id: combo_A_mixed
-  type: 2
+  id: combo_H_charges
+  type: 0
   sequence:
-  - attack: {fileID: 11400000, guid: d5e6f708192a3b4c5d6e7f80910a2b3c, type: 2}
-    delayAfter: 0.3
-  - attack: {fileID: 11400000, guid: 2d2cc3258af24c00a30d09ffa753cafa, type: 2}
-    delayAfter: 0.3
-  - attack: {fileID: 11400000, guid: 965ec2a03d4a442088d474ea243f48ad, type: 2}
+  - attack: {fileID: 11400000, guid: c8e2a4b6d0f13579bd24680ace135792, type: 2}
+    delayAfter: 0.35
+    launchInterval: 0
+  - attack: {fileID: 11400000, guid: c8e2a4b6d0f13579bd24680ace135792, type: 2}
+    delayAfter: 0.35
+    launchInterval: 0
+  - attack: {fileID: 11400000, guid: c8e2a4b6d0f13579bd24680ace135792, type: 2}
     delayAfter: 0.4
+    launchInterval: 0

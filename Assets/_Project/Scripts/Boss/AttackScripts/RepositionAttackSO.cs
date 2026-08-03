@@ -18,11 +18,21 @@ public class RepositionAttackSO : BossAttackSO
     [Tooltip("Tiempo máximo de espera por si no llega (seguridad), en segundos.")]
     public float timeout = 2.5f;
 
+    [Header("Velocidad (opcional)")]
+    [Tooltip("Si > 0, ANULA la velocidad ambiente de la fase SOLO para este desplazamiento (p.ej. un " +
+             "cruce rápido del arena). 0 = hereda BossMovementData.moveSpeed de la fase actual, como hoy.")]
+    public float travelSpeed = 0f;
+
     public override IEnumerator Execute(BossContext ctx)
     {
         if (ctx.Movement == null) yield break;
 
-        ctx.Movement.MoveTo(ComputeTarget(ctx));
+        // NOTA: telegraphSeconds/recoverySeconds (heredados de BossAttackSO) antes eran letra muerta
+        // aquí -> ahora SÍ se respetan. Si algún asset existente los tenía puestos "por si acaso"
+        // (p.ej. util_RepositionEdge), su timing real cambia; ajústalos a 0 si no se quiere el aviso.
+        yield return Telegraph(ctx);
+
+        ctx.Movement.MoveTo(ComputeTarget(ctx), travelSpeed);
 
         float t = 0f;
         while (!ctx.Movement.HasArrived && t < timeout)
@@ -30,6 +40,8 @@ public class RepositionAttackSO : BossAttackSO
             t += Time.deltaTime;
             yield return null;
         }
+
+        yield return Recover();
     }
 
     private Vector2 ComputeTarget(BossContext ctx)

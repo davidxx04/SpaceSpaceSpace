@@ -18,8 +18,17 @@ public class AimedVolleyAttackSO : BossAttackSO
     public float timeBetweenShots = 0.5f;
 
     [Tooltip("Si está marcado, ALTERNA bala parreable (cian) y no parreable (roja) en cada disparo de la " +
-             "ráfaga -> fuerza esquiva/parry/esquiva/parry. (Ignora 'parryable' para el color de cada bala.)")]
+             "ráfaga -> fuerza esquiva/parry/esquiva/parry. (Ignora 'parryable' para el color de cada bala.) " +
+             "Se ignora si 'lastShotParryable' está marcado.")]
     public bool alternateParry = false;
+
+    [Tooltip("Si está marcado, TODA la ráfaga es no parreable EXCEPTO el último disparo, que sale " +
+             "parreable (cian) -> fuerza esquiva*N + parry final. Tiene prioridad sobre 'alternateParry'.")]
+    public bool lastShotParryable = false;
+
+    [Tooltip("Solo con 'alternateParry': el PRIMER disparo es parreable (patrón parry/esquiva/parry...). " +
+             "Con 3 balas -> la del MEDIO es la no parreable. false (default) = la ráfaga empieza por esquiva.")]
+    public bool startParryable = false;
 
     public override IEnumerator Execute(BossContext ctx)
     {
@@ -29,7 +38,9 @@ public class AimedVolleyAttackSO : BossAttackSO
         {
             Vector2 origin = ctx.MuzzlePosition(0);
             Vector2 dir = ctx.AimToPlayer(origin);   // reapunta en cada disparo
-            bool shotParryable = alternateParry ? (i % 2 == 1) : parryable;   // empieza por esquiva (roja)
+            bool shotParryable = lastShotParryable ? (i == shots - 1)
+                                : alternateParry ? ((i % 2 == 0) == startParryable)   // startParryable invierte la paridad
+                                : parryable;
             ctx.Spawn(origin, dir, projectileSpeed, range, false, damage, shotParryable);
 
             if (timeBetweenShots > 0f && i < shots - 1)

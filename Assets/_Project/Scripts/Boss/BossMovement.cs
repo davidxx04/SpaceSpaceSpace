@@ -32,6 +32,7 @@ public class BossMovement : MonoBehaviour
     private Transform player;
     private BossMoveBehavior behavior = BossMoveBehavior.Hold;
     private Vector2? moveToTarget;   // si tiene valor, manda sobre 'behavior' hasta llegar
+    private float? moveToSpeedOverride;   // si tiene valor, sustituye a data.moveSpeed SOLO para este MoveTo
     private float strafeAngle;       // ángulo actual de la órbita (grados)
 
     // --- Naturalidad (de-glue): el boss persigue un ANCLA retardada del jugador, no su posición real ---
@@ -64,10 +65,17 @@ public class BossMovement : MonoBehaviour
         anchorVel = Vector2.zero;
     }
     public void SetData(BossMovementData d) { if (d != null) data = d; }
-    public void SetBehavior(BossMoveBehavior b) { behavior = b; moveToTarget = null; }
+    public void SetBehavior(BossMoveBehavior b) { behavior = b; moveToTarget = null; moveToSpeedOverride = null; }
 
     // Pide un reposicionamiento puntual a un punto del mundo (sobrescribe el comportamiento ambiente).
-    public void MoveTo(Vector2 worldPoint) => moveToTarget = worldPoint;
+    // 'speedOverride' > 0 sustituye a data.moveSpeed SOLO para este desplazamiento (p.ej. un cruce
+    // rápido del arena que no depende de lo agresiva que sea la fase actual); 0 (default) = hereda
+    // la velocidad ambiente de la fase, igual que siempre.
+    public void MoveTo(Vector2 worldPoint, float speedOverride = 0f)
+    {
+        moveToTarget = worldPoint;
+        moveToSpeedOverride = speedOverride > 0f ? speedOverride : (float?)null;
+    }
 
     // true cuando no hay un MoveTo pendiente (el ataque puede 'yield' hasta que sea true).
     public bool HasArrived => !moveToTarget.HasValue;
@@ -85,6 +93,7 @@ public class BossMovement : MonoBehaviour
         chargeTraveled = 0f;
         charging = true;
         moveToTarget = null;
+        moveToSpeedOverride = null;
     }
 
     // Avance de la embestida: velocidad plena hasta sobrepasar al jugador, luego ease-out (SmoothStep)
@@ -126,7 +135,11 @@ public class BossMovement : MonoBehaviour
         if (moveToTarget.HasValue)
         {
             target = moveToTarget.Value;
-            if (Vector2.Distance(pos, target) <= data.arrivalThreshold) moveToTarget = null;
+            if (Vector2.Distance(pos, target) <= data.arrivalThreshold)
+            {
+                moveToTarget = null;
+                moveToSpeedOverride = null;
+            }
         }
         else
         {
@@ -154,8 +167,10 @@ public class BossMovement : MonoBehaviour
         target = ClampToArena(target);
 
         // INTEGRADOR CON PESO: SmoothDamp (críticamente amortiguado, sin overshoot) en vez de
-        // velocidad constante → arranques y frenadas suaves. moveSpeed actúa como tope de velocidad.
-        Vector2 next = Vector2.SmoothDamp(pos, target, ref moveVel, data.moveSmoothTime, data.moveSpeed, dt);
+        // velocidad constante → arranques y frenadas suaves. moveSpeed actúa como tope de velocidad;
+        // un MoveTo con speedOverride lo sustituye solo mientras ese desplazamiento esté en curso.
+        float topSpeed = moveToSpeedOverride ?? data.moveSpeed;
+        Vector2 next = Vector2.SmoothDamp(pos, target, ref moveVel, data.moveSmoothTime, topSpeed, dt);
         rb.MovePosition(ClampToArena(next));
     }
 

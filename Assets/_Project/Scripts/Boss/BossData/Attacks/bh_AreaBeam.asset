@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edc61e392af51b141ac910a842a481f7, type: 3}
+  m_Name: bh_AreaBeam
+  m_EditorClassIdentifier:
+  id: bh_area_beam
+  parryable: 0
+  telegraphSeconds: 0
+  recoverySeconds: 0.3
+  telegraphVfx: {fileID: 0}
+  size: {x: 3, y: 3}
+  atPlayer: 1
+  trackPlayer: 0
+  lockSeconds: 0.2
+  offset: {x: 0, y: 0}
+  fillAxisY: 1
+  fromBossToPlayer: 1
+  fillScreenX: 0
+  fillScreenY: 0
+  fillSeconds: 0.7
+  impactSeconds: 0.12
+  damage: 12
+  alpha: 0.7
+  dodgeColor: {r: 1, g: 0.28, b: 0.05, a: 1}
+  parryColor: {r: 0.1, g: 0.85, b: 1, a: 1}
+  impactColor: {r: 1, g: 1, b: 1, a: 1}

@@ -35,13 +35,18 @@ public class SwooshAttackSO : BossAttackSO
     [Tooltip("Color cuando es parreable (frío = parry).")]
     public Color parryColor = new Color(0.2f, 0.8f, 1f, 0.9f);
 
+    [Header("Variante")]
+    [Tooltip("Usa el prefab de swoosh PEQUEÑO (rastro más fino) si BossContext.SmallSwooshPrefab está " +
+             "asignado; si no, cae al swoosh normal. Pensado para swooshes cortos/rápidos encadenados.")]
+    public bool smallVariant = false;
+
     public override IEnumerator Execute(BossContext ctx)
     {
         Vector2 origin = ctx.MuzzlePosition(0);
         Vector2 dir = aimAtPlayer ? ctx.AimToPlayer(origin) : BossAttackUtils.AngleToDir(fixedAngle);
         Color c = parryable ? parryColor : dodgeColor;
 
-        BossSwoosh sw = ctx.SpawnSwoosh(origin);
+        BossSwoosh sw = ctx.SpawnSwoosh(origin, smallVariant);
         if (sw == null) { yield return Recover(); yield break; }
 
         // (1) telegrafía: línea fina en la dirección del barrido.

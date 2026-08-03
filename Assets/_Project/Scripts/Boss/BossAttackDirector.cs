@@ -66,15 +66,36 @@ public class BossAttackDirector : MonoBehaviour
         yield return attack.Execute(ctx);
     }
 
+    // Recorre la secuencia. Por defecto ('launchInterval' == 0) es estrictamente secuencial: espera
+    // a que cada ataque termine del todo antes de aplicar 'delayAfter' y pasar al siguiente (igual
+    // que siempre). Si un paso pone 'launchInterval' > 0, ese ataque se lanza en SEGUNDO PLANO
+    // (fire-and-forget vía StartCoroutine) y el reloj para el SIGUIENTE paso empieza a contar desde
+    // el INICIO de este, no desde su fin -> permite ataques solapados/concurrentes a propósito.
+    // 'pending' guarda el último ataque lanzado en segundo plano para no perder su rastro: si el
+    // siguiente paso vuelve al modo clásico, se espera primero a que termine (mantiene el orden), y
+    // si es el ÚLTIMO paso del combo, el combo no se da por terminado hasta que también él acabe.
     private IEnumerator RunCombo(BossComboSO combo)
     {
         if (combo == null || combo.sequence == null) { yield return null; yield break; }
 
+        Coroutine pending = null;
+
         foreach (BossComboSO.Step step in combo.sequence)
         {
-            yield return RunAttack(step.attack);
-            if (step.delayAfter > 0f) yield return new WaitForSeconds(step.delayAfter);
+            if (step.launchInterval > 0f)
+            {
+                pending = StartCoroutine(RunAttack(step.attack));
+                yield return new WaitForSeconds(step.launchInterval);
+            }
+            else
+            {
+                if (pending != null) { yield return pending; pending = null; }
+                yield return RunAttack(step.attack);
+                if (step.delayAfter > 0f) yield return new WaitForSeconds(step.delayAfter);
+            }
         }
+
+        if (pending != null) yield return pending;
     }
 
     private BossAttackSO NextSingle()
