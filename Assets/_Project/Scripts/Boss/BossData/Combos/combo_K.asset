@@ -24,9 +24,6 @@ MonoBehaviour:
   - attack: {fileID: 11400000, guid: da8c71fd3d74457c96fa1afb8f4c0ae7, type: 2}
     delayAfter: 0.25
     launchInterval: 0
-  - attack: {fileID: 11400000, guid: f09a0346a2e04014a52a2b0378d6d54d, type: 2}
-    delayAfter: 0.3
-    launchInterval: 0
   - attack: {fileID: 11400000, guid: fbc4c5d694044f11bc3cbbf6e1507491, type: 2}
     delayAfter: 0.3
     launchInterval: 0

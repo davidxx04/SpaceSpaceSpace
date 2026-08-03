@@ -48,16 +48,16 @@ MonoBehaviour:
   maxBolts: 4
   verticality: 1
   verticalSpread: 12
-  lengthRange: {x: 1.2, y: 2}
-  verticalLengthRange: {x: 2.5, y: 4}
-  widthRange: {x: 0.05, y: 0.14}
+  lengthRange: {x: 1.9, y: 3.2}
+  verticalLengthRange: {x: 4, y: 6.4}
+  widthRange: {x: 0.08, y: 0.2}
   segments: 5
   deviationRange: {x: 0.5, y: 2}
   branchRange: {x: 0, y: 4}
   branchAngleMax: 40
   branchLengthFrac: {x: 0.3, y: 0.6}
   branchWidthFrac: 0.6
-  color: {r: 0.9827129, g: 1, b: 0.69803923, a: 1}
+  color: {r: 0.32, g: 0.62, b: 1, a: 0.8}
   duration: 0.25
   alphaOverLife:
     serializedVersion: 2

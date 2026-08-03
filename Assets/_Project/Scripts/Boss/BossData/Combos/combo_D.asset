@@ -21,5 +21,3 @@ MonoBehaviour:
     delayAfter: 0.3
   - attack: {fileID: 11400000, guid: c3e5071a2b4d6f8093c5e7091b3d5f71, type: 2}
     delayAfter: 0.3
-  - attack: {fileID: 11400000, guid: d4f618290a3c5e7194d6f8092a4c6e80, type: 2}
-    delayAfter: 0.4
