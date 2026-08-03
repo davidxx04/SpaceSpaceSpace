@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: phase4
   m_EditorClassIdentifier: 
   id: phase4_finale
-  enterAtHealthFraction: 0.98
+  enterAtHealthFraction: 0.1
   useCombos: 1
   singles: []
   combos:
