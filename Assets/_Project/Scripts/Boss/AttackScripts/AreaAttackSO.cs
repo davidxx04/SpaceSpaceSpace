@@ -106,6 +106,7 @@ public class AreaAttackSO : BossAttackSO
         area.SetColor(WithAlpha(impact, alpha));
         var info = new DamageInfo(damage, ctx.Boss != null ? ctx.Boss.gameObject : null, Vector2.zero) { parryable = parryable };
         area.ActivateHitbox(info);
+        AudioManager.PlayBossArea();   // suena al IMPACTAR (no en la telegrafía)
         if (impactSeconds > 0f) yield return new WaitForSeconds(impactSeconds);
         area.DeactivateHitbox();
 

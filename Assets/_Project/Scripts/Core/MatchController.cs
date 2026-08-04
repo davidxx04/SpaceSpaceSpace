@@ -124,6 +124,10 @@ public class MatchController : MonoBehaviour
 
         Result = new MatchResult(outcome, score, timeRemaining);
         Debug.Log($"[Match] {outcome} — score: {score} (tiempo restante: {timeRemaining:0}s)");
+
+        // Jingle de "game over" solo al PERDER (muerte). Suena aunque timeScale=0 (AudioManager usa DSP).
+        if (outcome == MatchOutcome.Death) AudioManager.PlayGameOver();
+
         MatchEnded?.Invoke(Result);
     }
 

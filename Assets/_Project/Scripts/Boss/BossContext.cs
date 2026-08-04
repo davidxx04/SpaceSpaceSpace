@@ -59,6 +59,7 @@ public class BossContext
         if (proj == null) return null;
         var info = new DamageInfo(damage, Boss != null ? Boss.gameObject : null, dir) { parryable = parryable };
         proj.Launch(dir, speed, range, pierce, info);
+        AudioManager.PlayBossBullet();   // el minInterval del sonido colapsa un abanico simultáneo en 1
         return proj;
     }
 
@@ -70,6 +71,7 @@ public class BossContext
             Debug.LogWarning("[BossContext] No hay prefab de área asignado; no se lanza el área.");
             return null;
         }
+        // El sonido del área lo dispara AreaAttackSO en el IMPACTO (no aquí, que es la telegrafía).
         return PoolManager.Spawn(AreaPrefab, pos, Quaternion.identity);
     }
 
@@ -84,6 +86,7 @@ public class BossContext
             Debug.LogWarning("[BossContext] No hay prefab de swoosh asignado; no se lanza el swoosh.");
             return null;
         }
+        // El sonido del swoosh lo dispara SwooshAttackSO al LANZAR el barrido (no aquí, que es la telegrafía).
         return PoolManager.Spawn(prefab, pos, Quaternion.identity);
     }
 }

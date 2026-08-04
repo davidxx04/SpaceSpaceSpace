@@ -32,6 +32,8 @@ public class ParryState : IPlayerState
         player.NextParryTime = Time.time + data.cooldown;
         player.BeginShipSpin();
 
+        AudioManager.PlayParry();
+
         if (data.vfxPrefab != null)
         {
             Object.Instantiate(data.vfxPrefab, player.Rb.position, Quaternion.identity);

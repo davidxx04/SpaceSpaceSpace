@@ -55,6 +55,8 @@ public class AttackState : IPlayerState
 
     private void Fire(AttackData data)
     {
+        AudioManager.PlayPlayerShoot();   // una vez por disparo (no por bala del abanico)
+
         if (data.projectilePrefab != null)
         {
             Vector2 spawnPos = player.Rb.position + direction * data.spawnOffset;

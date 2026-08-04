@@ -43,6 +43,7 @@ public class ParrySuccessFx : MonoBehaviour
     {
         Vector3 pos = transform.position;
 
+        AudioManager.PlayParrySuccess();
         if (shipFlash != null) shipFlash.Flash(flashColor, flashDuration);
         if (shockwavePrefab != null) Instantiate(shockwavePrefab, pos, Quaternion.identity);
         if (lightningPrefab != null) Instantiate(lightningPrefab, pos, Quaternion.identity);

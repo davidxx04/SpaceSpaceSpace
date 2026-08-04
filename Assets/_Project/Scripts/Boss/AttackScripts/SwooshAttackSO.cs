@@ -56,6 +56,7 @@ public class SwooshAttackSO : BossAttackSO
         // (2) barrido: la barra cuerpo viaja por 'travelDistance' a 'travelSpeed' con el hitbox activo.
         // 'parryable' elige la paleta del fuego (cálida = esquiva, fría = parry).
         sw.BeginBody(dir, width, thickness, c, parryable);
+        AudioManager.PlayBossSwoosh();   // suena al LANZAR el barrido (no en la telegrafía)
         var info = new DamageInfo(damage, ctx.Boss != null ? ctx.Boss.gameObject : null, dir) { parryable = parryable };
         sw.ActivateHitbox(info);
 

@@ -2737,6 +2737,7 @@ GameObject:
   - component: {fileID: 1709322462}
   - component: {fileID: 1709322465}
   - component: {fileID: 1709322466}
+  - component: {fileID: 1709322470}
   m_Layer: 5
   m_Name: Btn_Start
   m_TagString: Untagged
@@ -2744,6 +2745,18 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &1709322470
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1709322460}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0d0ddb35ed54adf9d3837b14511b453, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
 --- !u!224 &1709322461
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3208,6 +3221,7 @@ GameObject:
   - component: {fileID: 2093217982}
   - component: {fileID: 2093217985}
   - component: {fileID: 2093217986}
+  - component: {fileID: 2093217990}
   m_Layer: 5
   m_Name: Btn_Leaderboard
   m_TagString: Untagged
@@ -3215,6 +3229,18 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &2093217990
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2093217980}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0d0ddb35ed54adf9d3837b14511b453, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
 --- !u!224 &2093217981
 RectTransform:
   m_ObjectHideFlags: 0

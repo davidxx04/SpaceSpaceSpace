@@ -1,0 +1,95 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 574a38af803642ca9440b188340158a0, type: 3}
+  m_Name: SfxLibrary
+  m_EditorClassIdentifier:
+  bossBullet:
+    clip: {fileID: 8300000, guid: 8ba4de14dc668524894f21dd21935ac0, type: 3}
+    volume: 0.5
+    startTime: 0
+    maxDuration: 0.5
+    fadeOut: 0.05
+    minInterval: 0.05
+    pitchJitter: {x: 1, y: 1}
+  bossSwoosh:
+    clip: {fileID: 8300000, guid: 4ff6066374b83c54c9dfd56bb87b9e04, type: 3}
+    volume: 0.8
+    startTime: 0
+    maxDuration: 2
+    fadeOut: 0.15
+    minInterval: 0
+    pitchJitter: {x: 1, y: 1}
+  bossArea:
+    clip: {fileID: 8300000, guid: 59b583b4919cc6a4388720adeece2b9e, type: 3}
+    volume: 0.6
+    startTime: 0
+    maxDuration: 0
+    fadeOut: 0
+    minInterval: 0
+    pitchJitter: {x: 1, y: 1}
+  playerShoot:
+    clip: {fileID: 8300000, guid: 83c607ea72672144eb77eb122b59cc8a, type: 3}
+    volume: 0.35
+    startTime: 0.08
+    maxDuration: 0.5
+    fadeOut: 0.1
+    minInterval: 0
+    pitchJitter: {x: 1, y: 1}
+  dash:
+    clip: {fileID: 8300000, guid: f5c7dc611a8042bbba039e24da2ec9d8, type: 3}
+    volume: 0.08
+    startTime: 0
+    maxDuration: 0
+    fadeOut: 0.15
+    minInterval: 0.03
+    pitchJitter: {x: 0.95, y: 1.05}
+  parry:
+    clip: {fileID: 8300000, guid: aaf59313274649a88cee9a42ff5b1013, type: 3}
+    volume: 0.6
+    startTime: 0
+    maxDuration: 0
+    fadeOut: 0
+    minInterval: 0.03
+    pitchJitter: {x: 1, y: 1}
+  parrySuccess:
+    clip: {fileID: 8300000, guid: 4dacd836067d4febb0baf83ee60417ef, type: 3}
+    volume: 0.6
+    startTime: 0
+    maxDuration: 0
+    fadeOut: 0.05
+    minInterval: 0.05
+    pitchJitter: {x: 1, y: 1}
+  uiClick:
+    clip: {fileID: 8300000, guid: 7ba389a7f9df7ed4c8d4796b14caec21, type: 3}
+    volume: 0.7
+    startTime: 0
+    maxDuration: 0
+    fadeOut: 0
+    minInterval: 0
+    pitchJitter: {x: 1, y: 1}
+  uiHover:
+    clip: {fileID: 8300000, guid: 5f1ba2f2032ea03409a4ec60f860bf95, type: 3}
+    volume: 0.5
+    startTime: 0
+    maxDuration: 0
+    fadeOut: 0
+    minInterval: 0.03
+    pitchJitter: {x: 1, y: 1}
+  gameOver:
+    clip: {fileID: 8300000, guid: dd81b85f95fa56b45874493991e4b72b, type: 3}
+    volume: 0.85
+    startTime: 0
+    maxDuration: 0
+    fadeOut: 0
+    minInterval: 0
+    pitchJitter: {x: 1, y: 1}
+  masterVolume: 1

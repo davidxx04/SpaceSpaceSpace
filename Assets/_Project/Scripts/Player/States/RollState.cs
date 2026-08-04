@@ -32,6 +32,8 @@ public class RollState : IPlayerState
         player.Rb.velocity = Vector2.zero;             // el rol se mueve por MovePosition, no por velocidad
         player.NextRollTime = Time.time + data.cooldown;
 
+        AudioManager.PlayDash();
+
         if (data.vfxPrefab != null)
         {
             Object.Instantiate(data.vfxPrefab, startPos, Quaternion.identity);
