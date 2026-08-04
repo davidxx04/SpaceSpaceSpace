@@ -61,6 +61,11 @@ public class AreaAttackSO : BossAttackSO
     [Tooltip("Color del flash de IMPACTO (mientras pega), común a parreable y no parreable.")]
     public Color impactColor = new Color(1f, 1f, 1f, 1f);
 
+    [Range(0f, 1f)]
+    [Tooltip("Cuánto se tiñe el flash de impacto hacia el color de verbo (azul si parreable, naranja " +
+             "si no) para que pegue con el área. 0 = blanco puro; ~0.4 = blanco con un toque del verbo.")]
+    public float impactTint = 0.4f;
+
     public override IEnumerator Execute(BossContext ctx)
     {
         Rect arena = ArenaBounds.PlayArea;
@@ -94,8 +99,11 @@ public class AreaAttackSO : BossAttackSO
         }
         area.SetFill(1f);
 
-        // (3) impacto: recolorea al flash de impacto y activa el hitbox una ventana breve.
-        area.SetColor(WithAlpha(impactColor, alpha));
+        // (3) impacto: recolorea al flash de impacto y activa el hitbox una ventana breve. El blanco se
+        // tiñe un poco hacia el color de verbo (azul si parreable, naranja si no) para que pegue con el área.
+        Color verbColor = parryable ? parryColor : dodgeColor;
+        Color impact = Color.Lerp(impactColor, verbColor, impactTint);
+        area.SetColor(WithAlpha(impact, alpha));
         var info = new DamageInfo(damage, ctx.Boss != null ? ctx.Boss.gameObject : null, Vector2.zero) { parryable = parryable };
         area.ActivateHitbox(info);
         if (impactSeconds > 0f) yield return new WaitForSeconds(impactSeconds);
