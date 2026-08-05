@@ -50,6 +50,7 @@ public class SfxLibrary : ScriptableObject
     public SoundEffect dash;
     public SoundEffect parry;
     public SoundEffect parrySuccess;
+    public SoundEffect playerHurt;
 
     [Header("UI")]
     public SoundEffect uiClick;

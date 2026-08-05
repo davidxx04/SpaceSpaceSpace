@@ -67,6 +67,7 @@ public class AudioManager : MonoBehaviour
     public static void PlayDash()         => Play(Lib?.dash);
     public static void PlayParry()        => Play(Lib?.parry);
     public static void PlayParrySuccess() => Play(Lib?.parrySuccess);
+    public static void PlayPlayerHurt()   => Play(Lib?.playerHurt);
     public static void PlayUiClick()     => Play(Lib?.uiClick);
     public static void PlayUiHover()     => Play(Lib?.uiHover);
     public static void PlayGameOver()    => Play(Lib?.gameOver);

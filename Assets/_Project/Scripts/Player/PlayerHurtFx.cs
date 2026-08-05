@@ -62,6 +62,8 @@ public class PlayerHurtFx : MonoBehaviour
         // El receptor ya concedió la invulnerabilidad antes de avisar: arrancamos el parpadeo.
         blinking = true;
 
+        AudioManager.PlayPlayerHurt();
+
         if (hurtOverlay != null)
         {
             // Reactivar fuerza OnEnable -> Play() y reinicia la animación aunque ya estuviese en curso

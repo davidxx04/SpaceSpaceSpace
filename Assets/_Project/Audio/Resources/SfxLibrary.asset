@@ -68,6 +68,14 @@ MonoBehaviour:
     fadeOut: 0.05
     minInterval: 0.05
     pitchJitter: {x: 1, y: 1}
+  playerHurt:
+    clip: {fileID: 8300000, guid: a71769f605484a7dac0ad6c02610cb9f, type: 3}
+    volume: 0.55
+    startTime: 0
+    maxDuration: 0
+    fadeOut: 0.04
+    minInterval: 0.05
+    pitchJitter: {x: 1, y: 1}
   uiClick:
     clip: {fileID: 8300000, guid: 7ba389a7f9df7ed4c8d4796b14caec21, type: 3}
     volume: 0.7
