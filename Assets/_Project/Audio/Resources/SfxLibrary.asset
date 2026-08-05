@@ -53,16 +53,16 @@ MonoBehaviour:
     minInterval: 0.03
     pitchJitter: {x: 0.95, y: 1.05}
   parry:
-    clip: {fileID: 8300000, guid: aaf59313274649a88cee9a42ff5b1013, type: 3}
-    volume: 0.6
+    clip: {fileID: 8300000, guid: 2da44b7935af478aaa47680075c5fd18, type: 3}
+    volume: 0.35
     startTime: 0
     maxDuration: 0
-    fadeOut: 0
+    fadeOut: 0.04
     minInterval: 0.03
     pitchJitter: {x: 1, y: 1}
   parrySuccess:
-    clip: {fileID: 8300000, guid: 4dacd836067d4febb0baf83ee60417ef, type: 3}
-    volume: 0.6
+    clip: {fileID: 8300000, guid: efba0bfc91d74076b5d65750469a33bc, type: 3}
+    volume: 0.65
     startTime: 0
     maxDuration: 0
     fadeOut: 0.05
